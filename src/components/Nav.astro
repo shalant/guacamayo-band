@@ -1,0 +1,22 @@
+---
+const links = [
+	{ label: "Music", href: "#music" },
+	{ label: "Shows", href: "#shows" },
+	{ label: "Book", href: "#book" },
+];
+---
+
+<nav
+	class="relative z-10 flex items-center justify-between px-6 pt-6 font-mono text-xs tracking-widest text-paper-2 uppercase sm:px-10 sm:pt-8"
+>
+	<span>Guacamayo</span>
+	<span class="flex gap-6 sm:gap-8">
+		{
+			links.map((link) => (
+				<a href={link.href} class="transition-opacity hover:opacity-70">
+					{link.label}
+				</a>
+			))
+		}
+	</span>
+</nav>

@@ -1,0 +1,32 @@
+---
+import Layout from "../layouts/Layout.astro";
+import PageBackdrop from "../components/PageBackdrop.astro";
+import Hero from "../components/Hero.astro";
+---
+
+<Layout>
+	<PageBackdrop>
+		<Hero />
+
+		<section id="music" class="bg-ink px-8 py-16 sm:px-16">
+			<h2 class="font-display-alt text-xl font-black">Music</h2>
+			<p class="mt-2 max-w-md text-sm text-paper-2/80">
+				New singles and the live sets they came from, up before the next show.
+			</p>
+		</section>
+
+		<section id="shows" class="bg-ink px-8 py-16 sm:px-16">
+			<h2 class="font-display-alt text-xl font-black">Shows</h2>
+			<p class="mt-2 max-w-md text-sm text-paper-2/80">
+				Every stop this season, Chicago and beyond.
+			</p>
+		</section>
+
+		<section id="book" class="bg-ink px-8 py-16 sm:px-16">
+			<h2 class="font-display-alt text-xl font-black">Book Guacamayo</h2>
+			<p class="mt-2 max-w-md text-sm text-paper-2/80">
+				For booking inquiries, reach out and we'll get back to you.
+			</p>
+		</section>
+	</PageBackdrop>
+</Layout>

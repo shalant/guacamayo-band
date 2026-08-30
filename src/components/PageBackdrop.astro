@@ -1,0 +1,28 @@
+---
+// Full-Bleed Pin: the flyer art pinned behind the whole page as you scroll
+// (sticky layer + negative-margin content, so it never scrolls away until
+// content with its own background covers it). Swap the Image source or the
+// filter/position classes below to try a different backdrop treatment.
+import { Image } from "astro:assets";
+import flyer from "../assets/flyer.jpg";
+---
+
+<div class="relative">
+	<div class="sticky top-0 -z-10 h-dvh overflow-hidden">
+		<Image
+			src={flyer}
+			alt=""
+			role="presentation"
+			widths={[640, 1024, 1600, 2200]}
+			sizes="100vw"
+			class="absolute inset-0 h-full w-full object-cover object-[82%_34%] [filter:sepia(.15)_saturate(1.2)_contrast(1.05)_brightness(.6)]"
+		/>
+		<div
+			class="absolute inset-0 bg-gradient-to-b from-ink/15 to-ink/60"
+		>
+		</div>
+	</div>
+	<div class="relative -mt-[100dvh]">
+		<slot />
+	</div>
+</div>

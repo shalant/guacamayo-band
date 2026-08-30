@@ -1,0 +1,36 @@
+---
+import { Image } from "astro:assets";
+import Nav from "./Nav.astro";
+import logo from "../assets/logo.png";
+---
+
+<section class="flex min-h-dvh flex-col">
+	<Nav />
+	<div class="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
+		<Image
+			src={logo}
+			alt="Guacamayo"
+			widths={[300, 480, 640]}
+			sizes="(min-width: 640px) 480px, 70vw"
+			class="w-72 drop-shadow-[0_6px_16px_rgba(0,0,0,0.4)] sm:w-[420px]"
+		/>
+		<p class="flex flex-wrap justify-center gap-3 font-display text-3xl leading-none sm:text-5xl">
+			<span class="text-orange" style="-webkit-text-stroke:1.3px var(--color-ink)">Funky</span>
+			<span class="text-teal" style="-webkit-text-stroke:1.3px var(--color-ink)">Latin</span>
+			<span class="text-paper-2" style="-webkit-text-stroke:1.3px var(--color-ink)">Groove</span>
+		</p>
+		<p class="font-mono text-xs tracking-widest text-paper-2 uppercase">Live in Chicago</p>
+		<div class="mt-2 flex gap-3">
+			<a
+				href="#music"
+				class="rounded-full bg-gold px-5 py-2.5 font-mono text-xs tracking-wide text-ink uppercase"
+				>Listen Now</a
+			>
+			<a
+				href="#shows"
+				class="rounded-full border border-paper-2 px-5 py-2.5 font-mono text-xs tracking-wide text-paper-2 uppercase"
+				>Tour Dates</a
+			>
+		</div>
+	</div>
+</section>

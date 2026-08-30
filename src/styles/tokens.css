@@ -1,0 +1,23 @@
+/*
+  Design tokens — Guacamayo site
+  Sourced from the band's real Reggies show flyer (Javier Saume's poster art)
+  and the real logo file. Change values here to swap the whole site's look;
+  every Tailwind utility below (bg-ink, text-gold, font-display, ...) and any
+  CSS that reads var(--color-*) / var(--font-*) updates automatically.
+*/
+@theme {
+  --color-ink: #1c1712;
+  --color-paper: #e9daaf;
+  --color-paper-2: #f4ebd2;
+  --color-gold: #d9a441;
+  --color-orange: #e2622c;
+  --color-rust: #b8431f;
+  --color-teal: #2c8c87;
+  --color-teal-deep: #1b5551;
+  --color-red: #c23b22;
+
+  --font-display: "Luckiest Guy", cursive;
+  --font-display-alt: "Passion One", sans-serif;
+  --font-body: "Archivo", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Space Mono", ui-monospace, monospace;
+}

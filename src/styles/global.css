@@ -1,0 +1,10 @@
+@import "tailwindcss";
+@import "./tokens.css";
+
+/* Font files are loaded via @fontsource imports in Layout.astro */
+
+body {
+  background: var(--color-ink);
+  color: var(--color-paper-2);
+  font-family: var(--font-body);
+}

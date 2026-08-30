@@ -1,0 +1,35 @@
+---
+import "@fontsource/luckiest-guy";
+import "@fontsource/passion-one/700.css";
+import "@fontsource/passion-one/900.css";
+import "@fontsource/archivo/500.css";
+import "@fontsource/archivo/600.css";
+import "@fontsource/archivo/700.css";
+import "@fontsource/archivo/800.css";
+import "@fontsource/space-mono";
+import "@fontsource/space-mono/700.css";
+import "../styles/global.css";
+
+interface Props {
+	title?: string;
+	description?: string;
+}
+
+const {
+	title = "Guacamayo — Funky Latin Groove",
+	description = "Guacamayo is a Chicago-based Funky Latin Groove band.",
+} = Astro.props;
+---
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="description" content={description} />
+		<meta name="generator" content={Astro.generator} />
+		<title>{title}</title>
+	</head>
+	<body>
+		<slot />
+	</body>
+</html>
