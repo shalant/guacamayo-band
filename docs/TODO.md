@@ -17,15 +17,16 @@ Not ordered/prioritized — pull from whichever's relevant.
 - [ ] Image optimization pass on the flyer background specifically — check real mobile payload size once Music/Shows content exists (see the Blazor-vs-Astro payload comparison earlier in this project's chat history for why this matters)
 - [ ] Decide whether to pull in `GuacamayouFirstVideo.mp4` (the real promo clip) anywhere — explored in `ten-video-backdrops.html` but not in the live build
 - [ ] Favicon (currently using Astro's default)
-- [ ] `astro.config.mjs` — `site` still has a placeholder `your-username` value, fix before deploying
+- [x] ~~`astro.config.mjs` — `site` still has a placeholder `your-username` value~~ — fixed, set to `shalant.github.io`
 
 ## Infra / deploy
 
-- [ ] Decide GH Pages vs. Cloudflare Pages (leaning GH Pages to start, free, no domain needed yet)
-- [ ] git init + first commit (respect the no-commits-during-work-hours rule in `CLAUDE.md`/`AGENTS.md`)
-- [ ] Push to GitHub, set up Pages (or Cloudflare Pages git integration)
+- [x] ~~Decide GH Pages vs. Cloudflare Pages~~ — GH Pages to start (free, no domain needed yet); see `docs/DEPLOYMENT.md` for the Cloudflare move plan
+- [x] ~~git init + first commit~~
+- [x] ~~Push to GitHub, set up Pages~~ — live at <https://shalant.github.io/guacamayo-band/>, auto-deploys via `.github/workflows/deploy.yml` on merge to `master`
+- [x] ~~All future changes must be made on a branch~~ — branch protection enforced on `master` (PR required, including for admins); PR template requires docs to be updated before merge
 - [ ] Buy a domain, eventually — no rush, GH Pages subdomain works for now
-- [ ] Once on a real host: confirm Brotli is actually being served (GH Pages won't; Cloudflare will)
+- [ ] Once a domain exists: move to Cloudflare Pages per `docs/DEPLOYMENT.md` (confirms Brotli, HTTP/3, edge caching)
 
 ## Open decisions
 
