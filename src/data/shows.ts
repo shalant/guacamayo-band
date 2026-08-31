@@ -52,13 +52,12 @@ const FALLBACK_SHOWS: Show[] = [
 
 // GigSync (sibling repo `GigSync`) auto-populates this from forwarded
 // gig-confirmation emails via Claude extraction — no manual entry.
-// TODO: replace with the deployed Worker's real URL once it's live
-// (currently only reachable while `npm run dev` is running locally in
-// the GigSync repo). GigSync returns a street `address`, not a bare city —
+// Live as of 2026-08-30 — the free *.workers.dev URL from the GigSync
+// repo's deploy. GigSync returns a street `address`, not a bare city —
 // passed straight through as `city` for now since Shows.astro just
 // displays whatever string is there; revisit if that reads oddly once
 // real addresses show up.
-const GIGSYNC_API = "http://localhost:8787";
+const GIGSYNC_API = "https://gigsync-backend.doug-rosenberg.workers.dev";
 const GIGSYNC_CLIENT = "guacamayo";
 
 interface GigSyncGig {
