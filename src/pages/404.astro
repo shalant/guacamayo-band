@@ -1,0 +1,26 @@
+---
+import Layout from "../layouts/Layout.astro";
+import PageBackdrop from "../components/PageBackdrop.astro";
+import Nav from "../components/Nav.astro";
+
+const home = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/`;
+---
+
+<Layout title="Page not found — Guacamayo" description="That page doesn't exist.">
+	<PageBackdrop>
+		<div class="flex min-h-dvh flex-col">
+			<Nav />
+			<div class="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
+				<p class="font-display-alt text-6xl font-black text-paper-2">404</p>
+				<p class="max-w-sm text-sm text-paper-2/80">
+					That page wandered off. Try one of the links above, or head back home.
+				</p>
+				<a
+					href={home}
+					class="mt-2 inline-flex min-h-11 items-center rounded-full bg-gold px-5 py-2.5 font-mono text-xs tracking-wide text-ink uppercase"
+					>Back to Guacamayo</a
+				>
+			</div>
+		</div>
+	</PageBackdrop>
+</Layout>

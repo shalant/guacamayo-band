@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://shalant.github.io/guacamayo-band/sitemap.xml
