@@ -1,0 +1,86 @@
+---
+// Chronological ticket-stub list, grouped by month — not a literal
+// calendar grid. Fans scan for "what's the next show," not "what does
+// September look like," so a scannable list wins over a grid here.
+import { shows as allShows } from "../data/shows";
+
+const sorted = [...allShows].sort((a, b) => a.date.localeCompare(b.date));
+
+const monthFmt = new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" });
+const dayFmt = new Intl.DateTimeFormat("en-US", { day: "numeric" });
+const monthShortFmt = new Intl.DateTimeFormat("en-US", { month: "short" });
+
+type Group = { label: string; items: typeof sorted };
+const groups: Group[] = [];
+for (const show of sorted) {
+	const d = new Date(show.date + "T00:00:00");
+	const label = monthFmt.format(d);
+	const last = groups.at(-1);
+	if (last && last.label === label) {
+		last.items.push(show);
+	} else {
+		groups.push({ label, items: [show] });
+	}
+}
+---
+
+<section id="shows" class="bg-ink px-8 py-16 sm:px-16">
+	<h2 class="font-display-alt text-xl font-black">Shows</h2>
+	<p class="mt-2 max-w-md text-sm text-paper-2/80">
+		Every stop this season, Chicago and beyond.
+	</p>
+
+	{
+		sorted.length === 0 ? (
+			<p class="mt-8 font-mono text-sm text-paper-2/60">
+				No shows booked right now — check back soon.
+			</p>
+		) : (
+			<div class="mt-10 max-w-2xl">
+				{groups.map((group) => (
+					<div class="mb-8 last:mb-0">
+						<p class="mb-3 font-mono text-xs tracking-widest text-paper-2/50 uppercase">
+							{group.label}
+						</p>
+						<ul class="divide-y divide-dashed divide-paper-2/15">
+							{group.items.map((show) => {
+								const d = new Date(show.date + "T00:00:00");
+								return (
+									<li class="flex items-center gap-4 py-4 sm:gap-6">
+										<div class="flex w-14 shrink-0 flex-col items-center rounded-md bg-gold px-2 py-1.5 text-ink">
+											<span class="font-display-alt text-xl leading-none font-black">
+												{dayFmt.format(d)}
+											</span>
+											<span class="font-mono text-[10px] tracking-wide uppercase">
+												{monthShortFmt.format(d)}
+											</span>
+										</div>
+										<div class="min-w-0 flex-1">
+											<p class="truncate font-semibold text-paper-2">{show.venue}</p>
+											<p class="truncate text-sm text-paper-2/60">{show.city}</p>
+										</div>
+										<div class="hidden font-mono text-xs text-paper-2/60 sm:block">
+											{show.time}
+										</div>
+										{show.ticketUrl ? (
+											<a
+												href={show.ticketUrl}
+												class="shrink-0 rounded-full border border-paper-2/40 px-4 py-2 font-mono text-xs tracking-wide text-paper-2 uppercase transition-colors hover:border-paper-2"
+											>
+												Tickets
+											</a>
+										) : (
+											<span class="shrink-0 font-mono text-xs text-paper-2/40 uppercase">
+												Info soon
+											</span>
+										)}
+									</li>
+								);
+							})}
+						</ul>
+					</div>
+				))}
+			</div>
+		)
+	}
+</section>
