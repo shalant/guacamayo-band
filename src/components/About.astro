@@ -1,0 +1,33 @@
+---
+// Bio copy is a first draft using only verified facts (lineup, instruments,
+// genre, city) — no invented history. Replace with the band's own voice
+// before launch; see docs/TODO.md.
+const members = [
+	{ name: "Doug Rosenberg", instrument: "Saxophone" },
+	{ name: "Jack Zará", instrument: "Bass" },
+	{ name: "Manuel Reyes", instrument: "Guitar" },
+	{ name: "Javier Saume Mazzei", instrument: "Drums" },
+];
+---
+
+<section id="about" class="bg-ink px-8 py-16 sm:px-16">
+	<h2 class="font-display-alt text-xl font-black">About</h2>
+	<p class="mt-4 max-w-lg text-sm leading-relaxed text-paper-2/80">
+		Guacamayo plays funky Latin groove out of Chicago — saxophone, guitar,
+		bass, and drums locking into something built for outdoor stages and
+		packed dance floors as much as a club stage. Four players, one groove.
+	</p>
+
+	<ul class="mt-8 grid max-w-lg grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-4">
+		{
+			members.map((member) => (
+				<li>
+					<p class="font-semibold text-paper-2">{member.name}</p>
+					<p class="font-mono text-xs tracking-wide text-orange uppercase">
+						{member.instrument}
+					</p>
+				</li>
+			))
+		}
+	</ul>
+</section>

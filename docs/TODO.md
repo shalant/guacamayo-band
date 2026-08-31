@@ -8,8 +8,8 @@ Not ordered/prioritized — pull from whichever's relevant.
 - [x] ~~Real Shows section~~ — built (`src/components/Shows.astro`, ticket-stub list grouped by month), but `src/data/shows.ts` is **dummy/test data**, not real gig dates. Swap before launch.
 - [ ] Booking section — real contact method (email link at minimum; a form needs a backend/service like Formspree since this is a static site)
 - [ ] Photo gallery
-- [ ] Press/EPK section — ranked above About/Gallery in priority (see chat history: this band already gigs, so this is closer to MVP than "nice to have" for them specifically)
-- [ ] About/bio — smaller than Press/EPK priority-wise but still standard
+- [ ] Press/EPK section — still the top-priority gap (see chat history: this band already gigs, so this is closer to MVP than "nice to have" for them specifically)
+- [x] ~~About/bio~~ — built (`src/components/About.astro`), placed right after Hero. Bio copy is a **first draft using only verified facts** (lineup, instruments, genre, city) — no invented backstory. Swap for the band's own voice before launch.
 - [ ] Confirm exact band-member spelling/instrument credits against the flyer before publishing (Doug Rosenberg/sax, Jack Zará/bass, Manuel Reyes/guitar, Javier Saume Mazzei/drums)
 
 ## Build
