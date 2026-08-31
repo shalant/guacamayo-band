@@ -15,3 +15,46 @@ body {
   color: var(--color-paper-2);
   font-family: var(--font-body);
 }
+
+/* Slow, subtle Ken Burns drift on the pinned backdrop — reads as "alive,"
+   not as a slideshow. Scale stays under 1.05 and the pan is tiny on
+   purpose; overflow-hidden on the parent crops it cleanly. Applied via
+   Tailwind's motion-safe: variant, so prefers-reduced-motion gets a fully
+   static image with zero extra markup. */
+@keyframes backdrop-drift {
+  0%, 100% {
+    transform: scale(1) translate(0, 0);
+  }
+  50% {
+    transform: scale(1.045) translate(-1%, 0.6%);
+  }
+}
+
+/* One-shot mechanical flap-in for the Shows date tiles, triggered by
+   IntersectionObserver in Shows.astro (adds .is-visible), not looped
+   forever — these are dates people read repeatedly, not a marquee. */
+@keyframes flap-in {
+  0% {
+    transform: rotateX(90deg);
+  }
+  60% {
+    transform: rotateX(-8deg);
+  }
+  100% {
+    transform: rotateX(0deg);
+  }
+}
+.flap-tile {
+  transform: rotateX(90deg);
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+}
+.flap-tile.is-visible {
+  animation: flap-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .flap-tile {
+    transform: none;
+    animation: none !important;
+  }
+}

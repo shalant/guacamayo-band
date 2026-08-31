@@ -22,6 +22,7 @@ Not ordered/prioritized — pull from whichever's relevant.
 - [x] ~~Open Graph/Twitter/og:image, robots.txt/sitemap.xml, custom 404, WCAG contrast audit, touch-target audit~~ — all built/fixed in one pass, see `QUALITY_CHECKLIST.md` for specifics on what was actually wrong and how each was verified (not just implemented and assumed correct)
 - [x] ~~`astro.config.mjs` — `site` still has a placeholder `your-username` value~~ — fixed, set to `shalant.github.io`
 - [x] ~~Sticky/persistent nav~~ — nav was only ever inside `Hero.astro`, scrolling away with it; moved to `Layout.astro`, `position: fixed`, glassmorphism (restrained, tied to the real palette — see `DESIGN_NOTES.md`), real logo linking home. All link hrefs now home-prefixed so they still work from `404.astro`.
+- [x] ~~Split-flap tiles + subtle backdrop animation~~ — split-flap treatment (from `ten-flyer-variations.html`) applied to the real Shows date badges, flapping in once via IntersectionObserver, not looping. Backdrop now has a slow (28s) Ken Burns drift. Both `motion-safe:`/`prefers-reduced-motion`-aware. This also resolves the scroll-triggered-reveal item from the canonical checklist (`QUALITY_CHECKLIST.md` didn't call it out explicitly as deferred, but it was never actually built anywhere until now).
 
 ## Infra / deploy
 
@@ -35,4 +36,4 @@ Not ordered/prioritized — pull from whichever's relevant.
 ## Open decisions
 
 - [ ] Waiting on Javier's vote on the overall direction — current build (Full-Bleed Pin) is Doug's pick, not yet confirmed with the rest of the band
-- [ ] Whether to mix elements from other explored directions in (e.g. the ticket-stub Shows layout, the split-flap "next show" strip) — see `DESIGN_NOTES.md` for the full exploration trail
+- [x] ~~Whether to mix elements from other explored directions in~~ — split-flap tiles now integrated into Shows (2026-08-31), see above. Ticket-stub Shows layout is effectively already the chosen approach (the whole section is ticket-stub styled). Full "next show" flap strip in the Hero is still open — now that Shows data is live/build-time-fresh (not stale hardcoded info), the original "no specific show info in hero" concern from `DESIGN_NOTES.md` no longer fully applies; worth revisiting if wanted.
