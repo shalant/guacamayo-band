@@ -14,13 +14,14 @@ Not ordered/prioritized — pull from whichever's relevant.
 
 ## Build
 
-- [x] ~~Mobile nav~~ — verified at 320px and 375px, holds up fine as a plain flex row (5 links now: About/Music/Shows/Press/Book). Added `overflow-x-auto` as a safety net for anything narrower, not currently needed.
+- [x] ~~Mobile nav~~ — nav is now fixed/global with a real logo (2026-08-31), which pushed it past fitting at 375px on the original spacing. Tightened mobile-only sizing to fit comfortably ≥375px; `overflow-x-auto` now genuinely earns its keep below that (a few px short at 320px). Verified via direct DOM measurement of the real mobile CSS values, not the visual resize tool — `resize_window` wasn't actually changing the rendered viewport in this environment tonight, worth knowing if it recurs.
 - [ ] Image optimization pass on the flyer background specifically — check real mobile payload size once Music/Shows content exists (see the Blazor-vs-Astro payload comparison earlier in this project's chat history for why this matters)
 - [ ] Decide whether to pull in `GuacamayouFirstVideo.mp4` (the real promo clip) anywhere — explored in `ten-video-backdrops.html` but not in the live build
 - [x] ~~Favicon~~ — replaced with the real macaw-head icon, see `QUALITY_CHECKLIST.md`
 - [x] ~~Broken favicon + Press download links in production~~ — `BASE_URL` doesn't end in a slash on this project; the favicon links (PR #4) and Press download links (PR #6) were silently malformed and 404ing live. Fixed with an explicit-slash join helper — see `DEPLOYMENT.md` lessons-learned.
 - [x] ~~Open Graph/Twitter/og:image, robots.txt/sitemap.xml, custom 404, WCAG contrast audit, touch-target audit~~ — all built/fixed in one pass, see `QUALITY_CHECKLIST.md` for specifics on what was actually wrong and how each was verified (not just implemented and assumed correct)
 - [x] ~~`astro.config.mjs` — `site` still has a placeholder `your-username` value~~ — fixed, set to `shalant.github.io`
+- [x] ~~Sticky/persistent nav~~ — nav was only ever inside `Hero.astro`, scrolling away with it; moved to `Layout.astro`, `position: fixed`, glassmorphism (restrained, tied to the real palette — see `DESIGN_NOTES.md`), real logo linking home. All link hrefs now home-prefixed so they still work from `404.astro`.
 
 ## Infra / deploy
 
