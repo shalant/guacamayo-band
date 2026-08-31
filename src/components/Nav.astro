@@ -51,10 +51,18 @@ const links = [
 </nav>
 
 <style>
-	/* perspective on the row, not each tile, so the tilt reads like all
-	   tiles sit on one shared panel rather than each floating separately */
+	/* No perspective/3D here anymore (see below) — and overflow-y is forced
+	   hidden explicitly, not left to default, since overflow-x:auto alone
+	   leaves overflow-y computed as auto too (a real CSS spec behavior:
+	   when one axis is a scrolling value and the other is visible, the UA
+	   must compute the visible one as auto as well). Combined with the
+	   previous rotateX+perspective 3D tilt, that surfaced a real unwanted
+	   vertical scrollbar on hover. Dropping the 3D tilt for a flat
+	   scale+brightness hover removes the actual cause; this is the
+	   explicit belt-and-suspenders fix on top of that.
+	*/
 	.nav-tile-row {
-		perspective: 400px;
+		overflow-y: hidden;
 	}
 
 	.nav-tile {
@@ -62,8 +70,7 @@ const links = [
 		color: var(--tile-fg);
 		transition:
 			transform 160ms ease,
-			filter 160ms ease,
-			box-shadow 160ms ease;
+			filter 160ms ease;
 	}
 
 	/* Scoped to real hover-capable pointers only — Tailwind's own hover:
@@ -73,19 +80,22 @@ const links = [
 	   elsewhere, which reads as broken. */
 	@media (hover: hover) and (pointer: fine) {
 		.nav-tile:hover {
-			transform: scale(1.08) rotateX(-10deg);
-			filter: brightness(1.15);
-			box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+			transform: scale(1.06);
+			filter: brightness(1.12);
+		}
+		.nav-tile.is-active:hover {
+			transform: rotateZ(-6deg) scale(1.06);
 		}
 	}
 
-	/* :active covers the tactile press feedback on every pointer type,
-	   mouse or touch — this is what mobile actually gets. Tilts the
-	   opposite way from hover, like the tile is being pushed in. */
-	.nav-tile:active {
-		transform: scale(0.94) rotateX(8deg);
-		filter: brightness(0.85);
-		box-shadow: none;
+	/* Click sets a persistent "active tab" state (real click-tracking JS
+	   below, not just :active/:focus) — a Z-axis rotation, like the tile
+	   has been turned to face you. The ring stays even under
+	   reduced-motion, so the active tab is never indicated by motion
+	   alone — rotation is the bonus, not the only signal. */
+	.nav-tile.is-active {
+		transform: rotateZ(-6deg);
+		box-shadow: 0 0 0 2px var(--color-paper-2);
 	}
 
 	.nav-tile:focus-visible {
@@ -97,9 +107,24 @@ const links = [
 		.nav-tile {
 			transition: none;
 		}
-		.nav-tile:hover,
-		.nav-tile:active {
+		.nav-tile:hover {
+			transform: none;
+		}
+		.nav-tile.is-active {
 			transform: none;
 		}
 	}
 </style>
+
+<script>
+	// Persistent "active tab" on click — separate from :hover/:focus-visible,
+	// stays set until a different tile is clicked. Scoped to this component
+	// since Nav renders once globally; no cross-page state, resets on
+	// navigation (each page's nav starts with nothing active).
+	document.querySelectorAll<HTMLAnchorElement>(".nav-tile").forEach((tile) => {
+		tile.addEventListener("click", () => {
+			document.querySelectorAll(".nav-tile").forEach((t) => t.classList.remove("is-active"));
+			tile.classList.add("is-active");
+		});
+	});
+</script>
