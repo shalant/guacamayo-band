@@ -1,18 +1,35 @@
 ---
+// Global, persistent nav — rendered once from Layout.astro, not per-page.
+// Glassmorphism was a deliberate ask despite it being called out in
+// career-development's own SITE_QUALITY_CHECKLIST.md as a generic
+// AI-site tell — kept restrained (ink tint + blur, no bright frosted
+// panel/glow border) to read as a choice on this brand, not a template
+// default. See DESIGN_NOTES.md.
+import { Image } from "astro:assets";
+import logo from "../assets/logo.png";
+
+const home = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/`;
+
+// Prefixed with `home` so these still resolve correctly from any page
+// (404.astro included), not just the index page these anchors live on.
 const links = [
-	{ label: "About", href: "#about" },
-	{ label: "Music", href: "#music" },
-	{ label: "Shows", href: "#shows" },
-	{ label: "Press", href: "#press" },
-	{ label: "Book", href: "#book" },
+	{ label: "About", href: `${home}#about` },
+	{ label: "Music", href: `${home}#music` },
+	{ label: "Shows", href: `${home}#shows` },
+	{ label: "Press", href: `${home}#press` },
+	{ label: "Book", href: `${home}#book` },
 ];
 ---
 
 <nav
-	class="relative z-10 flex items-center justify-between gap-4 px-6 pt-6 font-mono text-xs tracking-widest text-paper-2 uppercase sm:px-10 sm:pt-8"
+	class="fixed inset-x-0 top-0 z-50 flex items-center justify-between gap-2 border-b border-paper-2/10 bg-ink/40 px-4 py-2 backdrop-blur-md sm:gap-4 sm:px-10"
 >
-	<span class="shrink-0">Guacamayo</span>
-	<span class="flex gap-4 overflow-x-auto whitespace-nowrap sm:gap-8">
+	<a href={home} class="inline-flex min-h-11 shrink-0 items-center" aria-label="Guacamayo — home">
+		<Image src={logo} alt="" role="presentation" widths={[150, 260]} sizes="100px" class="h-6 w-auto sm:h-9" />
+	</a>
+	<span
+		class="flex gap-2 overflow-x-auto whitespace-nowrap font-mono text-xs tracking-wide text-paper-2 uppercase sm:gap-8 sm:tracking-widest"
+	>
 		{
 			links.map((link) => (
 				<a href={link.href} class="inline-flex min-h-11 items-center transition-opacity hover:opacity-70">

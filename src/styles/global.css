@@ -3,6 +3,13 @@
 
 /* Font files are loaded via @fontsource imports in Layout.astro */
 
+/* Offsets anchor-link scroll targets (nav "About"/"Music"/etc.) so section
+   headings don't land hidden under the fixed nav bar. Value calibrated
+   against the real rendered nav height, not guessed. */
+html {
+  scroll-padding-top: 4.5rem;
+}
+
 body {
   background: var(--color-ink);
   color: var(--color-paper-2);
