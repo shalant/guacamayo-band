@@ -31,13 +31,16 @@ Tracks this project against the canonical checklist in `career-development/docs/
 - [x] Alt text — both real images already had it right (`logo.png` has meaningful alt text, the decorative flyer backdrop has empty `alt=""` + `role="presentation"`, which is the correct pattern for a decorative image, not an oversight)
 - [x] Single `<main>` landmark, sensible heading order — `PageBackdrop`'s content wrapper is now a `<main>`; Hero's "Funky Latin Groove" is now a real `<h1>` (was a styled `<p>`), every section below uses `<h2>`
 
+## Done (second pass, 2026-08-31)
+
+- [x] Open Graph / Twitter card / `og:image` at proper 1200×630 — real image cropped/composited from the actual flyer (`public/og-image.jpg`), not a reused logo asset. `canonical`/`og:url`/`og:image` all built as absolute URLs via `new URL(path, Astro.site)`, not string-concatenated (the base-path bug from `TODO.md` was exactly this kind of string-concat mistake — used the robust pattern this time).
+- [x] `robots.txt` / `sitemap.xml` — hand-written static files in `public/`, not the `@astrojs/sitemap` integration (overkill for one URL). **Note:** both hardcode the live `shalant.github.io` URL — update them when the Cloudflare/custom-domain move happens (see `DEPLOYMENT.md`).
+- [x] Custom 404 page — `src/pages/404.astro`, on-brand (same pinned backdrop, real nav), not GitHub's generic default. Verified via `astro preview` that GH Pages' 404 fallback actually serves it.
+- [x] WCAG AA contrast check — computed real ratios (not eyeballed) for every text/background pair in the palette. One real failure found and fixed: the old `text-paper-2/40` "Info soon" label was 3.41:1 against a 4.5:1 requirement. Fixed as part of the ticket-link rework below (now full-opacity `text-paper-2`, same treatment as the Tickets button, 7.9:1). Everything else already passed, including the Hero `<h1>`'s teal span — apparent 4.41:1 "failure" isn't one once large-text sizing rules (3:1 threshold at 24px+) are applied correctly.
+- [x] Touch-target sizing audit (44×44px) — measured real rendered sizes via `getBoundingClientRect()`, not estimated from padding math. Found genuine failures across nav links (16px), Hero CTAs (38px), Press download buttons (34px), and the Shows ticket/no-ticket button (16-38px) — fixed all of them with a consistent `inline-flex min-h-11 items-center` pattern. One deliberate exception: the inline `mailto:` link inside the Press section's running-text paragraph (182×15) — WCAG 2.5.5 explicitly exempts links inline within a sentence from the target-size criterion; forcing it to 44px would mean re-writing that as a standalone button, which isn't how that link is meant to be used.
+
 ## Deferred — real, not started
 
-- [ ] Open Graph / Twitter card / `og:image` at proper 1200×630
-- [ ] `robots.txt` / `sitemap.xml`
-- [ ] Custom 404 page
-- [ ] WCAG AA contrast check — the palette hasn't actually been run through a contrast checker yet
-- [ ] Touch-target sizing audit (44×44px)
 - [ ] Full Lighthouse audit against the production URL
 - [ ] Analytics — deliberately not installed. Personal site, not a client project needing funnel data; revisit only if a real question comes up that analytics would answer.
 - [ ] Golden-path manual walkthrough immediately before any future "launch" milestone
