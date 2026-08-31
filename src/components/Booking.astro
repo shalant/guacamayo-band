@@ -1,0 +1,21 @@
+---
+// Placeholder inbox — swap for the band's real address before launch (see docs/TODO.md).
+// This is the site's one deliberate contact/booking CTA — don't add a second
+// competing "get in touch" elsewhere on the page.
+const bookingEmail = "hello@guacamayoband.com";
+const subject = encodeURIComponent("Booking inquiry — Guacamayo");
+---
+
+<section id="book" class="bg-ink px-8 py-16 sm:px-16">
+	<h2 class="font-display-alt text-xl font-black">Book Guacamayo</h2>
+	<p class="mt-2 max-w-md text-sm text-paper-2/80">
+		Booking a show, a private event, or just want to say hi — email us and we'll get back to
+		you.
+	</p>
+	<a
+		href={`mailto:${bookingEmail}?subject=${subject}`}
+		class="mt-6 inline-block rounded-full bg-gold px-6 py-3 font-mono text-sm tracking-wide text-ink uppercase"
+	>
+		{bookingEmail}
+	</a>
+</section>

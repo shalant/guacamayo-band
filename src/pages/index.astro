@@ -4,6 +4,7 @@ import PageBackdrop from "../components/PageBackdrop.astro";
 import Hero from "../components/Hero.astro";
 import Shows from "../components/Shows.astro";
 import About from "../components/About.astro";
+import Booking from "../components/Booking.astro";
 ---
 
 <Layout>
@@ -21,11 +22,6 @@ import About from "../components/About.astro";
 
 		<Shows />
 
-		<section id="book" class="bg-ink px-8 py-16 sm:px-16">
-			<h2 class="font-display-alt text-xl font-black">Book Guacamayo</h2>
-			<p class="mt-2 max-w-md text-sm text-paper-2/80">
-				For booking inquiries, reach out and we'll get back to you.
-			</p>
-		</section>
+		<Booking />
 	</PageBackdrop>
 </Layout>

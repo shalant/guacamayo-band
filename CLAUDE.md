@@ -1,6 +1,6 @@
 ## Docs
 
-Read `docs/DESIGN_NOTES.md` before proposing a new visual direction or design tokens — it records what's already locked and what's already been explored and rejected. `docs/TODO.md` tracks open work. `docs/DEPLOYMENT.md` covers hosting/CI-CD, including the planned Cloudflare move.
+Read `docs/DESIGN_NOTES.md` before proposing a new visual direction or design tokens — it records what's already locked and what's already been explored and rejected. `docs/TODO.md` tracks open work. `docs/DEPLOYMENT.md` covers hosting/CI-CD, including the planned Cloudflare move. `docs/QUALITY_CHECKLIST.md` tracks status against the canonical career-development site checklist.
 
 **Every PR must update relevant docs before it's considered ready to merge** — if a change affects design decisions, deployment, or open work, the corresponding doc gets updated in the same PR, not after.
 
