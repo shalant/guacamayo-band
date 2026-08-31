@@ -2,12 +2,15 @@
 // Chronological ticket-stub list, grouped by month — not a literal
 // calendar grid. Fans scan for "what's the next show," not "what does
 // September look like," so a scannable list wins over a grid here.
+// Date badges use the split-flap tile treatment from the earlier
+// ten-flyer-variations.html exploration (gold/orange, real flyer colors),
+// flapping in once via IntersectionObserver rather than looping forever.
 import { shows as allShows } from "../data/shows";
 
 const sorted = [...allShows].sort((a, b) => a.date.localeCompare(b.date));
 
 const monthFmt = new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" });
-const dayFmt = new Intl.DateTimeFormat("en-US", { day: "numeric" });
+const dayFmt = new Intl.DateTimeFormat("en-US", { day: "2-digit" });
 const monthShortFmt = new Intl.DateTimeFormat("en-US", { month: "short" });
 
 type Group = { label: string; items: typeof sorted };
@@ -47,11 +50,18 @@ for (const show of sorted) {
 								const d = new Date(show.date + "T00:00:00");
 								return (
 									<li class="flex items-center gap-4 py-4 sm:gap-6">
-										<div class="flex w-14 shrink-0 flex-col items-center rounded-md bg-gold px-2 py-1.5 text-ink">
-											<span class="font-display-alt text-xl leading-none font-black">
-												{dayFmt.format(d)}
-											</span>
-											<span class="font-mono text-[10px] tracking-wide uppercase">
+										<div class="flex shrink-0 flex-col items-center gap-1" data-flap-group>
+											<div class="flex gap-0.5" style="perspective: 200px;">
+												{Array.from(dayFmt.format(d)).map((digit, i) => (
+													<span
+														class="flap-tile flex h-8 w-6 items-center justify-center rounded font-display-alt text-base leading-none font-black text-ink"
+														style={`background:var(${i === 0 ? "--color-gold" : "--color-orange"}); animation-delay:${i * 0.08}s;`}
+													>
+														{digit}
+													</span>
+												))}
+											</div>
+											<span class="font-mono text-[10px] tracking-wide text-paper-2/60 uppercase">
 												{monthShortFmt.format(d)}
 											</span>
 										</div>
@@ -78,3 +88,28 @@ for (const show of sorted) {
 		)
 	}
 </section>
+
+<script>
+	// Flap-in each date tile once, the first time it scrolls into view —
+	// not a looping marquee, since these are dates people read repeatedly,
+	// not a novelty. Real IntersectionObserver, not a guessed CSS-only
+	// scroll timing.
+	const groups = document.querySelectorAll<HTMLElement>("[data-flap-group]");
+	if ("IntersectionObserver" in window && groups.length) {
+		const io = new IntersectionObserver(
+			(entries) => {
+				for (const entry of entries) {
+					if (!entry.isIntersecting) continue;
+					entry.target.querySelectorAll(".flap-tile").forEach((tile) => tile.classList.add("is-visible"));
+					io.unobserve(entry.target);
+				}
+			},
+			{ threshold: 0.4 },
+		);
+		groups.forEach((group) => io.observe(group));
+	} else {
+		// No IntersectionObserver support (or none matched) — show tiles
+		// as-is rather than leaving them stuck mid-flip.
+		document.querySelectorAll(".flap-tile").forEach((tile) => tile.classList.add("is-visible"));
+	}
+</script>

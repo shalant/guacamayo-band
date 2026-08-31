@@ -39,6 +39,10 @@ Tracks this project against the canonical checklist in `career-development/docs/
 - [x] WCAG AA contrast check — computed real ratios (not eyeballed) for every text/background pair in the palette. One real failure found and fixed: the old `text-paper-2/40` "Info soon" label was 3.41:1 against a 4.5:1 requirement. Fixed as part of the ticket-link rework below (now full-opacity `text-paper-2`, same treatment as the Tickets button, 7.9:1). Everything else already passed, including the Hero `<h1>`'s teal span — apparent 4.41:1 "failure" isn't one once large-text sizing rules (3:1 threshold at 24px+) are applied correctly.
 - [x] Touch-target sizing audit (44×44px) — measured real rendered sizes via `getBoundingClientRect()`, not estimated from padding math. Found genuine failures across nav links (16px), Hero CTAs (38px), Press download buttons (34px), and the Shows ticket/no-ticket button (16-38px) — fixed all of them with a consistent `inline-flex min-h-11 items-center` pattern. One deliberate exception: the inline `mailto:` link inside the Press section's running-text paragraph (182×15) — WCAG 2.5.5 explicitly exempts links inline within a sentence from the target-size criterion; forcing it to 44px would mean re-writing that as a standalone button, which isn't how that link is meant to be used.
 
+## Done (third pass, 2026-08-31)
+
+- [x] Scroll-triggered reveal animations built on a real Intersection Observer — the Shows date tiles' split-flap-in, triggered once per element the first time it enters the viewport (not a guessed CSS-only delay, not a looping marquee). First real use of this pattern anywhere on the site.
+
 ## Deferred — real, not started
 
 - [ ] Full Lighthouse audit against the production URL
