@@ -4,7 +4,7 @@ Not ordered/prioritized — pull from whichever's relevant.
 
 ## Content
 
-- [ ] Real Music section — Spotify/YouTube embeds, replace placeholder text
+- [x] ~~Real Music section~~ — built (`src/components/Music.astro`), YouTube playlist-chain embed of the real 6 promo shorts from Javier's channel (9:16 aspect, matches the Shorts format instead of letterboxing in 16:9). No Spotify link yet — add if/when the band has music on Spotify.
 - [x] ~~Real Shows section~~ — built (`src/components/Shows.astro`, ticket-stub list grouped by month), but `src/data/shows.ts` is **dummy/test data**, not real gig dates. Swap before launch.
 - [x] ~~Booking section~~ — built (`src/components/Booking.astro`), real `mailto:` with pre-filled subject. `hello@guacamayoband.com` is a **placeholder inbox**, not live — swap once a real address exists. A real form still needs a backend/service like Formspree if wanted later.
 - [ ] Photo gallery — blocked on having real photos beyond the flyer/logo; not faking this one with placeholder images
