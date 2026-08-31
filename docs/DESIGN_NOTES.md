@@ -57,4 +57,5 @@ Objective pass done mid-project (see chat history for the full reasoning): cross
 ## Reference
 
 - `ui-lab` repo — archived exploration artifacts, see above. Check there before re-exploring a direction from scratch.
+- `career-development/docs/SITE_QUALITY_CHECKLIST.md` — the canonical 66-item pre-launch checklist; `docs/QUALITY_CHECKLIST.md` in this repo tracks Guacamayo's actual status against it.
 - [[doug-project-ecosystem]] (Claude memory) — sibling repos, shared conventions (no-commits-during-work-hours, avoid-AI-tells design philosophy).

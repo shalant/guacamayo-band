@@ -6,8 +6,8 @@ Not ordered/prioritized — pull from whichever's relevant.
 
 - [ ] Real Music section — Spotify/YouTube embeds, replace placeholder text
 - [x] ~~Real Shows section~~ — built (`src/components/Shows.astro`, ticket-stub list grouped by month), but `src/data/shows.ts` is **dummy/test data**, not real gig dates. Swap before launch.
-- [ ] Booking section — real contact method (email link at minimum; a form needs a backend/service like Formspree since this is a static site)
-- [ ] Photo gallery
+- [x] ~~Booking section~~ — built (`src/components/Booking.astro`), real `mailto:` with pre-filled subject. `hello@guacamayoband.com` is a **placeholder inbox**, not live — swap once a real address exists. A real form still needs a backend/service like Formspree if wanted later.
+- [ ] Photo gallery — blocked on having real photos beyond the flyer/logo; not faking this one with placeholder images
 - [ ] Press/EPK section — still the top-priority gap (see chat history: this band already gigs, so this is closer to MVP than "nice to have" for them specifically)
 - [x] ~~About/bio~~ — built (`src/components/About.astro`), placed right after Hero. Bio copy is a **first draft using only verified facts** (lineup, instruments, genre, city) — no invented backstory. Swap for the band's own voice before launch.
 - [ ] Confirm exact band-member spelling/instrument credits against the flyer before publishing (Doug Rosenberg/sax, Jack Zará/bass, Manuel Reyes/guitar, Javier Saume Mazzei/drums)
@@ -17,7 +17,7 @@ Not ordered/prioritized — pull from whichever's relevant.
 - [ ] Mobile nav — current nav is a plain flex row; check it actually holds up under 375px width
 - [ ] Image optimization pass on the flyer background specifically — check real mobile payload size once Music/Shows content exists (see the Blazor-vs-Astro payload comparison earlier in this project's chat history for why this matters)
 - [ ] Decide whether to pull in `GuacamayouFirstVideo.mp4` (the real promo clip) anywhere — explored in `ten-video-backdrops.html` but not in the live build
-- [ ] Favicon (currently using Astro's default)
+- [x] ~~Favicon~~ — replaced with the real macaw-head icon, see `QUALITY_CHECKLIST.md`
 - [x] ~~`astro.config.mjs` — `site` still has a placeholder `your-username` value~~ — fixed, set to `shalant.github.io`
 
 ## Infra / deploy
