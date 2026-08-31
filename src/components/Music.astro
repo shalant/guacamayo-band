@@ -1,35 +1,129 @@
 ---
-// Chained-playlist embed (?playlist=id2,id3,...) instead of a saved YouTube
-// playlist — no channel login needed to set up, native YouTube next/prev +
-// autoplay chaining. If Javier later makes a real saved playlist on the
-// channel, swap `src` for `https://www.youtube.com/embed/videoseries?list=PLxxxx`
-// and nothing else needs to change.
-const shortIds = [
-	"KGx6Zwm1Dsg",
-	"-4trKHWWudA",
-	"3W4F4VmI0tQ",
-	"pUUw3akwihE",
-	"Flnw1t7SzDI",
-	"6cZyB4y2flA",
-];
-const [first, ...rest] = shortIds;
-const src = `https://www.youtube.com/embed/${first}?playlist=${rest.join(",")}`;
+// Real YouTube IFrame Player API (official, documented, no scraping/
+// download) instead of a fixed ?playlist= chain — gives an actual track
+// list you can jump around in, not just next/prev in one fixed order.
+// Thumbnails come from YouTube's public img CDN (no API key needed);
+// titles/captions come from src/data/videos.ts — see that file for why
+// most tracks have a hand-written caption instead of YouTube's own title.
+import { tracks } from "../data/videos";
+
+const trackIds = tracks.map((t) => t.id);
 ---
 
 <section id="music" class="bg-ink px-8 py-16 sm:px-16">
 	<h2 class="font-display-alt text-xl font-black">Music</h2>
 	<p class="mt-2 max-w-md text-sm text-paper-2/80">
-		Live clips and the band's own reel, chained as one playlist — next video queues
-		automatically.
+		Live clips and the band's own reel — pick a track.
 	</p>
-	<div class="mt-8 aspect-[9/16] w-full max-w-[300px] overflow-hidden rounded-lg bg-black">
-		<iframe
-			class="h-full w-full"
-			src={src}
-			title="Guacamayo video playlist"
-			loading="lazy"
-			allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-			allowfullscreen
-		></iframe>
+
+	<div class="mt-8 flex flex-col gap-6 sm:flex-row sm:items-start">
+		<div class="aspect-[9/16] w-full max-w-[300px] shrink-0 overflow-hidden rounded-lg bg-black">
+			<div id="yt-player" class="h-full w-full"></div>
+		</div>
+
+		<ul class="flex w-full max-w-md flex-col gap-1">
+			{
+				tracks.map((track, i) => (
+					<li>
+						<button
+							type="button"
+							class="track-item flex min-h-11 w-full items-center gap-3 rounded px-2 py-1.5 text-left"
+							data-index={i}
+							aria-current={i === 0 ? "true" : "false"}
+						>
+							<img
+								src={`https://i.ytimg.com/vi/${track.id}/default.jpg`}
+								alt={`Thumbnail: ${track.caption ?? track.title}`}
+								width="60"
+								height="45"
+								loading="lazy"
+								class="h-11 w-14 shrink-0 rounded object-cover"
+							/>
+							<span class="min-w-0 flex-1 truncate font-mono text-xs text-paper-2">
+								{track.caption ?? track.title}
+							</span>
+						</button>
+					</li>
+				))
+			}
+		</ul>
 	</div>
 </section>
+
+<script define:vars={{ trackIds }}>
+	let player;
+	let currentIndex = 0;
+
+	function updateActiveUI() {
+		document.querySelectorAll(".track-item").forEach((el, i) => {
+			const active = i === currentIndex;
+			el.setAttribute("aria-current", active ? "true" : "false");
+			el.classList.toggle("is-active", active);
+		});
+	}
+
+	function playTrack(index) {
+		currentIndex = index;
+		if (player && player.loadVideoById) {
+			player.loadVideoById(trackIds[index]);
+		}
+		updateActiveUI();
+	}
+
+	function onPlayerStateChange(event) {
+		// Auto-advance on end, looping back to the first track — same
+		// "chained playlist" feel as before, now driven by our own list.
+		if (window.YT && event.data === window.YT.PlayerState.ENDED) {
+			playTrack((currentIndex + 1) % trackIds.length);
+		}
+	}
+
+	function initPlayer() {
+		player = new window.YT.Player("yt-player", {
+			videoId: trackIds[0],
+			playerVars: { playsinline: 1, rel: 0 },
+			events: { onStateChange: onPlayerStateChange },
+		});
+	}
+
+	document.querySelectorAll(".track-item").forEach((btn) => {
+		btn.addEventListener("click", () => playTrack(Number(btn.dataset.index)));
+	});
+	updateActiveUI();
+
+	if (window.YT && window.YT.Player) {
+		initPlayer();
+	} else {
+		const prevReady = window.onYouTubeIframeAPIReady;
+		window.onYouTubeIframeAPIReady = () => {
+			if (typeof prevReady === "function") prevReady();
+			initPlayer();
+		};
+		if (!document.querySelector('script[src="https://www.youtube.com/iframe_api"]')) {
+			const tag = document.createElement("script");
+			tag.src = "https://www.youtube.com/iframe_api";
+			document.head.appendChild(tag);
+		}
+	}
+</script>
+
+<style>
+	.track-item {
+		background: transparent;
+		cursor: pointer;
+		transition:
+			background-color 150ms ease,
+			box-shadow 150ms ease;
+	}
+	.track-item:hover {
+		background: rgba(244, 235, 210, 0.08);
+	}
+	.track-item.is-active {
+		background: rgba(217, 164, 65, 0.15);
+		box-shadow: inset 3px 0 0 var(--color-gold);
+	}
+	.track-item:focus-visible {
+		outline: 2px solid var(--color-paper-2);
+		outline-offset: -2px;
+	}
+</style>
