@@ -1,0 +1,36 @@
+---
+// Honest, minimal EPK: real downloadable assets (original-quality logo +
+// flyer, served from public/press/ so venues get full-res files, not the
+// resized/optimized web versions astro:assets generates), no invented press
+// quotes or reviews since none exist yet. Add real ones here as they come in.
+const base = import.meta.env.BASE_URL;
+const assets = [
+	{ label: "Logo (PNG)", href: `${base}press/guacamayo-logo.png` },
+	{ label: "Show flyer (JPG)", href: `${base}press/guacamayo-flyer.jpg` },
+];
+---
+
+<section id="press" class="bg-ink px-8 py-16 sm:px-16">
+	<h2 class="font-display-alt text-xl font-black">Press</h2>
+	<p class="mt-2 max-w-md text-sm text-paper-2/80">
+		Guacamayo — funky Latin groove out of Chicago. Saxophone, guitar, bass, and drums. Booking
+		and press inquiries: <a href="mailto:hello@guacamayoband.com" class="underline"
+			>hello@guacamayoband.com</a
+		>.
+	</p>
+	<ul class="mt-6 flex flex-wrap gap-3">
+		{
+			assets.map((asset) => (
+				<li>
+					<a
+						href={asset.href}
+						download
+						class="inline-block rounded-full border border-paper-2/40 px-4 py-2 font-mono text-xs tracking-wide text-paper-2 uppercase transition-colors hover:border-paper-2"
+					>
+						{asset.label}
+					</a>
+				</li>
+			))
+		}
+	</ul>
+</section>
