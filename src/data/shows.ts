@@ -67,6 +67,18 @@ interface GigSyncGig {
 	address: string;
 }
 
+// GigSync extracts dates from free-text emails, so a gig can arrive with an
+// unparseable source date (e.g. "32-September,2026") — GigSync stores those
+// as date: "" rather than guessing. Shows.astro parses `date` straight into
+// an Intl.DateTimeFormat, which throws on an empty/invalid string and would
+// take down the whole section, so invalid gigs are filtered out here instead
+// of passed through — same "one bad record can't break the build" resilience
+// as the fetch-failure fallback below, just for one bad item instead of the
+// whole response.
+function hasValidDate(gig: GigSyncGig): boolean {
+	return gig.date !== "" && !Number.isNaN(new Date(`${gig.date}T00:00:00`).getTime());
+}
+
 async function fetchShows(): Promise<Show[]> {
 	try {
 		const res = await fetch(`${GIGSYNC_API}/gigs?client=${GIGSYNC_CLIENT}`, {
@@ -75,12 +87,18 @@ async function fetchShows(): Promise<Show[]> {
 		if (!res.ok) throw new Error(`GigSync returned ${res.status}`);
 		const data = (await res.json()) as { gigs: GigSyncGig[] };
 		if (!data.gigs?.length) return FALLBACK_SHOWS;
-		return data.gigs.map((gig) => ({
-			date: gig.date,
-			time: gig.time,
-			venue: gig.venue,
-			city: gig.address,
-		}));
+		return data.gigs
+			.filter((gig) => {
+				if (hasValidDate(gig)) return true;
+				console.warn(`[shows.ts] Skipping gig with invalid date ("${gig.date}"): ${gig.venue}`);
+				return false;
+			})
+			.map((gig) => ({
+				date: gig.date,
+				time: gig.time,
+				venue: gig.venue,
+				city: gig.address,
+			}));
 	} catch (err) {
 		console.warn("[shows.ts] GigSync fetch failed, using placeholder shows:", err);
 		return FALLBACK_SHOWS;
