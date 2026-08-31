@@ -1,8 +1,6 @@
-// Placeholder/test data — NOT real confirmed shows. Doug asked for dummy
-// gig dates to test the Shows layout. Shape mirrors what a future
-// email-to-calendar sync service would produce (date, venue, city, time,
-// ticket link), so swapping this static array for a real data source
-// later shouldn't require touching Shows.astro.
+// Shape mirrors what the GigSync backend produces (date, venue, city, time,
+// ticket link), so swapping the data source doesn't require touching
+// Shows.astro — see fetchShows() below.
 
 export interface Show {
 	date: string; // ISO date, e.g. "2026-09-14"
@@ -12,7 +10,10 @@ export interface Show {
 	ticketUrl?: string; // omit if tickets aren't on sale yet
 }
 
-export const shows: Show[] = [
+// Placeholder/test data — NOT real confirmed shows. Used only as a fallback
+// when the GigSync fetch below fails (backend not deployed yet, network
+// hiccup during build, etc.) so a backend outage never breaks the site build.
+const FALLBACK_SHOWS: Show[] = [
 	{
 		date: "2026-09-14",
 		time: "8:00 PM",
@@ -48,3 +49,42 @@ export const shows: Show[] = [
 		ticketUrl: "#",
 	},
 ];
+
+// GigSync (sibling repo `GigSync`) auto-populates this from forwarded
+// gig-confirmation emails via Claude extraction — no manual entry.
+// Live as of 2026-08-30 — the free *.workers.dev URL from the GigSync
+// repo's deploy. GigSync returns a street `address`, not a bare city —
+// passed straight through as `city` for now since Shows.astro just
+// displays whatever string is there; revisit if that reads oddly once
+// real addresses show up.
+const GIGSYNC_API = "https://gigsync-backend.doug-rosenberg.workers.dev";
+const GIGSYNC_CLIENT = "guacamayo";
+
+interface GigSyncGig {
+	date: string;
+	time: string;
+	venue: string;
+	address: string;
+}
+
+async function fetchShows(): Promise<Show[]> {
+	try {
+		const res = await fetch(`${GIGSYNC_API}/gigs?client=${GIGSYNC_CLIENT}`, {
+			signal: AbortSignal.timeout(5000),
+		});
+		if (!res.ok) throw new Error(`GigSync returned ${res.status}`);
+		const data = (await res.json()) as { gigs: GigSyncGig[] };
+		if (!data.gigs?.length) return FALLBACK_SHOWS;
+		return data.gigs.map((gig) => ({
+			date: gig.date,
+			time: gig.time,
+			venue: gig.venue,
+			city: gig.address,
+		}));
+	} catch (err) {
+		console.warn("[shows.ts] GigSync fetch failed, using placeholder shows:", err);
+		return FALLBACK_SHOWS;
+	}
+}
+
+export const shows: Show[] = await fetchShows();
