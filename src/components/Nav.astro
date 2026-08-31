@@ -29,40 +29,128 @@ const links = [
 ];
 ---
 
-<nav
-	class="fixed inset-x-0 top-0 z-50 flex items-center justify-between gap-2 border-b border-paper-2/10 bg-ink/40 px-4 py-2 backdrop-blur-md sm:gap-4 sm:px-10"
->
-	<a href={home} class="inline-flex min-h-11 shrink-0 items-center" aria-label="Guacamayo — home">
-		<Image src={logo} alt="" role="presentation" widths={[150, 260]} sizes="100px" class="h-6 w-auto sm:h-9" />
-	</a>
-	<span class="nav-tile-row flex gap-1.5 overflow-x-auto sm:gap-2">
-		{
-			links.map((link) => (
-				<a
-					href={link.href}
-					class="nav-tile inline-flex min-h-11 shrink-0 items-center rounded px-2.5 font-mono text-xs font-bold tracking-wide whitespace-nowrap uppercase sm:px-3"
-					style={`--tile-bg:${link.bg}; --tile-fg:${link.fg};`}
-				>
-					{link.label}
-				</a>
-			))
-		}
-	</span>
+<nav class="fixed inset-x-0 top-0 z-50 border-b border-paper-2/10 bg-ink/40 backdrop-blur-md">
+	<div class="flex items-center justify-between gap-2 px-4 py-2 sm:gap-4 sm:px-10">
+		<a href={home} class="inline-flex min-h-11 shrink-0 items-center" aria-label="Guacamayo — home">
+			<Image src={logo} alt="" role="presentation" widths={[150, 260]} sizes="100px" class="h-6 w-auto sm:h-9" />
+		</a>
+		<span id="nav-links" class="nav-tile-row gap-1.5 sm:gap-2">
+			{
+				links.map((link) => (
+					<a
+						href={link.href}
+						class="nav-tile inline-flex min-h-11 shrink-0 items-center rounded px-2.5 font-mono text-xs font-bold tracking-wide whitespace-nowrap uppercase sm:px-3"
+						style={`--tile-bg:${link.bg}; --tile-fg:${link.fg};`}
+					>
+						{link.label}
+					</a>
+				))
+			}
+		</span>
+		<button
+			type="button"
+			class="nav-toggle inline-flex h-11 w-11 shrink-0 flex-col items-center justify-center gap-1.5 sm:hidden"
+			aria-expanded="false"
+			aria-controls="nav-links"
+			aria-label="Toggle navigation menu"
+		>
+			<span class="hamburger-line" />
+			<span class="hamburger-line" />
+			<span class="hamburger-line" />
+		</button>
+	</div>
 </nav>
 
 <style>
-	/* No perspective/3D here anymore (see below) — and overflow-y is forced
-	   hidden explicitly, not left to default, since overflow-x:auto alone
-	   leaves overflow-y computed as auto too (a real CSS spec behavior:
-	   when one axis is a scrolling value and the other is visible, the UA
-	   must compute the visible one as auto as well). Combined with the
-	   previous rotateX+perspective 3D tilt, that surfaced a real unwanted
-	   vertical scrollbar on hover. Dropping the 3D tilt for a flat
-	   scale+brightness hover removes the actual cause; this is the
-	   explicit belt-and-suspenders fix on top of that.
-	*/
+	/* Mobile-first: the tile row is a hidden dropdown panel by default,
+	   toggled open by the hamburger (JS below adds/removes .is-open). At
+	   the sm breakpoint it becomes a normal always-visible inline row —
+	   plenty of width there for five tiles, so no horizontal-scroll
+	   fallback is needed on desktop the way it was before this component
+	   had a real mobile menu. overflow-y stays forced hidden regardless of
+	   layout: the rotateZ active-tile transform (see .is-active below)
+	   nudges the row's computed scrollable-overflow height by a few px
+	   even though nothing is actually meant to scroll, and this is the
+	   belt-and-suspenders guard against that ever surfacing a scrollbar. */
 	.nav-tile-row {
+		display: none;
+		flex-direction: column;
 		overflow-y: hidden;
+	}
+
+	.nav-tile-row.is-open {
+		display: flex;
+	}
+
+	@media (min-width: 640px) {
+		.nav-tile-row {
+			display: flex;
+			flex-direction: row;
+		}
+	}
+
+	/* Below sm, the open row becomes a dropdown panel under the bar rather
+	   than pushing page content down — nav's own fixed positioning is the
+	   containing block this anchors to. */
+	@media (max-width: 639.98px) {
+		.nav-tile-row {
+			position: absolute;
+			top: 100%;
+			right: 0;
+			left: 0;
+			gap: 0.5rem;
+			border-bottom: 1px solid rgba(244, 235, 210, 0.1);
+			background: var(--color-ink);
+			padding: 0.75rem 1rem 1rem;
+		}
+
+		.nav-tile {
+			width: 100%;
+			justify-content: center;
+		}
+	}
+
+	.nav-toggle {
+		background: transparent;
+		border: none;
+		cursor: pointer;
+	}
+
+	.hamburger-line {
+		width: 22px;
+		height: 2px;
+		border-radius: 1px;
+		background: var(--color-paper-2);
+		transition:
+			transform 200ms ease,
+			opacity 200ms ease;
+	}
+
+	/* Morphs the three lines into an X when open — the standard hamburger
+	   affordance, driven off the real aria-expanded state rather than a
+	   separate visual-only class, so assistive tech and the icon never
+	   disagree about whether the menu is open. */
+	.nav-toggle[aria-expanded="true"] .hamburger-line:nth-child(1) {
+		transform: translateY(6px) rotate(45deg);
+	}
+
+	.nav-toggle[aria-expanded="true"] .hamburger-line:nth-child(2) {
+		opacity: 0;
+	}
+
+	.nav-toggle[aria-expanded="true"] .hamburger-line:nth-child(3) {
+		transform: translateY(-6px) rotate(-45deg);
+	}
+
+	.nav-toggle:focus-visible {
+		outline: 2px solid var(--color-paper-2);
+		outline-offset: 2px;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.hamburger-line {
+			transition: none;
+		}
 	}
 
 	.nav-tile {
@@ -117,6 +205,28 @@ const links = [
 </style>
 
 <script>
+	// Mobile hamburger: toggles the dropdown panel open/closed. aria-expanded
+	// is the single source of truth for open state — the CSS X-morph and the
+	// row's .is-open both key off it, so the icon and assistive tech can't
+	// disagree.
+	const toggle = document.querySelector<HTMLButtonElement>(".nav-toggle");
+	const row = document.querySelector<HTMLElement>(".nav-tile-row");
+
+	function closeMenu() {
+		toggle?.setAttribute("aria-expanded", "false");
+		row?.classList.remove("is-open");
+	}
+
+	toggle?.addEventListener("click", () => {
+		const isOpen = toggle.getAttribute("aria-expanded") === "true";
+		toggle.setAttribute("aria-expanded", String(!isOpen));
+		row?.classList.toggle("is-open", !isOpen);
+	});
+
+	document.addEventListener("keydown", (e) => {
+		if (e.key === "Escape") closeMenu();
+	});
+
 	// Persistent "active tab" on click — separate from :hover/:focus-visible,
 	// stays set until a different tile is clicked. Scoped to this component
 	// since Nav renders once globally; no cross-page state, resets on
@@ -125,6 +235,9 @@ const links = [
 		tile.addEventListener("click", () => {
 			document.querySelectorAll(".nav-tile").forEach((t) => t.classList.remove("is-active"));
 			tile.classList.add("is-active");
+			// Same-page anchor click on mobile — close the dropdown so it
+			// doesn't sit open over the section the user just jumped to.
+			closeMenu();
 		});
 	});
 </script>
