@@ -12,12 +12,20 @@ const home = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/`;
 
 // Prefixed with `home` so these still resolve correctly from any page
 // (404.astro included), not just the index page these anchors live on.
+//
+// Each link is its own flap-tile-colored badge — same five-color cycle as
+// the split-flap prototype exploration, no motion this time (a deliberate
+// "max out the coloration" prototype pass). Text color per tile picked from
+// a real computed-contrast check, not eyeballed: ink text passes cleanly on
+// gold/orange/paper2, but fails WCAG AA at this text size on the brighter
+// teal (4.41:1) and on rust (3.27:1) — teal-deep + paper2 text (7.17:1) and
+// rust + paper2 text (4.57:1) both pass instead.
 const links = [
-	{ label: "About", href: `${home}#about` },
-	{ label: "Music", href: `${home}#music` },
-	{ label: "Shows", href: `${home}#shows` },
-	{ label: "Press", href: `${home}#press` },
-	{ label: "Book", href: `${home}#book` },
+	{ label: "About", href: `${home}#about`, bg: "var(--color-gold)", fg: "var(--color-ink)" },
+	{ label: "Music", href: `${home}#music`, bg: "var(--color-orange)", fg: "var(--color-ink)" },
+	{ label: "Shows", href: `${home}#shows`, bg: "var(--color-teal-deep)", fg: "var(--color-paper-2)" },
+	{ label: "Press", href: `${home}#press`, bg: "var(--color-paper-2)", fg: "var(--color-ink)" },
+	{ label: "Book", href: `${home}#book`, bg: "var(--color-rust)", fg: "var(--color-paper-2)" },
 ];
 ---
 
@@ -27,15 +35,71 @@ const links = [
 	<a href={home} class="inline-flex min-h-11 shrink-0 items-center" aria-label="Guacamayo — home">
 		<Image src={logo} alt="" role="presentation" widths={[150, 260]} sizes="100px" class="h-6 w-auto sm:h-9" />
 	</a>
-	<span
-		class="flex gap-2 overflow-x-auto whitespace-nowrap font-mono text-xs tracking-wide text-paper-2 uppercase sm:gap-8 sm:tracking-widest"
-	>
+	<span class="nav-tile-row flex gap-1.5 overflow-x-auto sm:gap-2">
 		{
 			links.map((link) => (
-				<a href={link.href} class="inline-flex min-h-11 items-center transition-opacity hover:opacity-70">
+				<a
+					href={link.href}
+					class="nav-tile inline-flex min-h-11 shrink-0 items-center rounded px-2.5 font-mono text-xs font-bold tracking-wide whitespace-nowrap uppercase sm:px-3"
+					style={`--tile-bg:${link.bg}; --tile-fg:${link.fg};`}
+				>
 					{link.label}
 				</a>
 			))
 		}
 	</span>
 </nav>
+
+<style>
+	/* perspective on the row, not each tile, so the tilt reads like all
+	   tiles sit on one shared panel rather than each floating separately */
+	.nav-tile-row {
+		perspective: 400px;
+	}
+
+	.nav-tile {
+		background: var(--tile-bg);
+		color: var(--tile-fg);
+		transition:
+			transform 160ms ease,
+			filter 160ms ease,
+			box-shadow 160ms ease;
+	}
+
+	/* Scoped to real hover-capable pointers only — Tailwind's own hover:
+	   does this automatically, but this is hand-written CSS in this block,
+	   so it needs the same guard explicitly. Without it, touch browsers can
+	   get a hover state "stuck" on after a tap until the user taps
+	   elsewhere, which reads as broken. */
+	@media (hover: hover) and (pointer: fine) {
+		.nav-tile:hover {
+			transform: scale(1.08) rotateX(-10deg);
+			filter: brightness(1.15);
+			box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+		}
+	}
+
+	/* :active covers the tactile press feedback on every pointer type,
+	   mouse or touch — this is what mobile actually gets. Tilts the
+	   opposite way from hover, like the tile is being pushed in. */
+	.nav-tile:active {
+		transform: scale(0.94) rotateX(8deg);
+		filter: brightness(0.85);
+		box-shadow: none;
+	}
+
+	.nav-tile:focus-visible {
+		outline: 2px solid var(--color-paper-2);
+		outline-offset: 2px;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.nav-tile {
+			transition: none;
+		}
+		.nav-tile:hover,
+		.nav-tile:active {
+			transform: none;
+		}
+	}
+</style>
