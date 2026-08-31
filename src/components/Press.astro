@@ -3,10 +3,11 @@
 // flyer, served from public/press/ so venues get full-res files, not the
 // resized/optimized web versions astro:assets generates), no invented press
 // quotes or reviews since none exist yet. Add real ones here as they come in.
-const base = import.meta.env.BASE_URL;
+// BASE_URL isn't guaranteed to end in a slash — see the same helper in Layout.astro.
+const assetUrl = (path: string) => `${import.meta.env.BASE_URL.replace(/\/$/, "")}/${path}`;
 const assets = [
-	{ label: "Logo (PNG)", href: `${base}press/guacamayo-logo.png` },
-	{ label: "Show flyer (JPG)", href: `${base}press/guacamayo-flyer.jpg` },
+	{ label: "Logo (PNG)", href: assetUrl("press/guacamayo-logo.png") },
+	{ label: "Show flyer (JPG)", href: assetUrl("press/guacamayo-flyer.jpg") },
 ];
 ---
 
