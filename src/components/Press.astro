@@ -11,9 +11,11 @@ const assets = [
 ];
 ---
 
-<section id="press" class="bg-ink px-8 py-16 sm:px-16">
-	<h2 class="font-display-alt text-xl font-black">Press</h2>
-	<p class="mt-2 max-w-md text-sm text-paper-2/80">
+<section id="press" class="relative px-8 py-24 sm:px-16 sm:py-32">
+	<div class="absolute inset-0 -z-10 bg-ink/45 backdrop-blur-md section-glass-fade"></div>
+	<div class="absolute inset-0 -z-10 bg-paper-2/65 section-glass-fade"></div>
+	<h2 class="font-display-alt text-xl font-black text-ink">Press</h2>
+	<p class="mt-2 max-w-md text-sm text-ink/80">
 		Guacamayo — funky Latin groove out of Chicago. Saxophone, guitar, bass, and drums. Booking
 		and press inquiries: <a href="mailto:hello@guacamayoband.com" class="underline"
 			>hello@guacamayoband.com</a
@@ -26,7 +28,7 @@ const assets = [
 					<a
 						href={asset.href}
 						download
-						class="inline-flex min-h-11 items-center rounded-full border border-paper-2/40 px-4 py-2 font-mono text-xs tracking-wide text-paper-2 uppercase transition-colors hover:border-paper-2"
+						class="inline-flex min-h-11 items-center rounded-full border border-ink/40 px-4 py-2 font-mono text-xs tracking-wide text-ink uppercase transition-colors hover:border-ink"
 					>
 						{asset.label}
 					</a>

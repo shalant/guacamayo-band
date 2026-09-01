@@ -14,42 +14,51 @@ const home = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/`;
 // (404.astro included), not just the index page these anchors live on.
 //
 // Each link is its own flap-tile-colored badge — same five-color cycle as
-// the split-flap prototype exploration, no motion this time (a deliberate
-// "max out the coloration" prototype pass). Text color per tile picked from
-// a real computed-contrast check, not eyeballed: ink text passes cleanly on
-// gold/orange/paper2, but fails WCAG AA at this text size on the brighter
-// teal (4.41:1) and on rust (3.27:1) — teal-deep + paper2 text (7.17:1) and
-// rust + paper2 text (4.57:1) both pass instead.
+// the split-flap prototype exploration. Text color per tile picked from
+// a real computed-contrast check (Node script, WCAG relative-luminance
+// formula, not eyeballed) against the "Carnival" palette (tokens.css):
+// ink text passes cleanly on gold (11.85:1), orange (6.72:1), and red
+// (5.13:1); paper2 text on red only reaches 3.38:1 and fails at this text
+// size, so Book uses ink, not paper2, unlike the old rust it replaced.
+// teal-deep + paper2 text (7.11:1) and paper2 bg + ink text (17.33:1)
+// both still pass comfortably.
 const links = [
 	{ label: "About", href: `${home}#about`, bg: "var(--color-gold)", fg: "var(--color-ink)" },
 	{ label: "Music", href: `${home}#music`, bg: "var(--color-orange)", fg: "var(--color-ink)" },
 	{ label: "Shows", href: `${home}#shows`, bg: "var(--color-teal-deep)", fg: "var(--color-paper-2)" },
 	{ label: "Press", href: `${home}#press`, bg: "var(--color-paper-2)", fg: "var(--color-ink)" },
-	{ label: "Book", href: `${home}#book`, bg: "var(--color-rust)", fg: "var(--color-paper-2)" },
+	{ label: "Book", href: `${home}#book`, bg: "var(--color-red)", fg: "var(--color-ink)" },
 ];
 ---
 
-<nav class="fixed inset-x-0 top-0 z-50 border-b border-paper-2/10 bg-ink/40 backdrop-blur-md">
+<nav class="fixed inset-x-0 top-0 z-50 bg-ink/5 backdrop-blur-md">
 	<div class="flex items-center justify-between gap-2 px-4 py-2 sm:gap-4 sm:px-10">
-		<a href={home} class="inline-flex min-h-11 shrink-0 items-center" aria-label="Guacamayo — home">
-			<Image src={logo} alt="" role="presentation" widths={[150, 260]} sizes="100px" class="h-6 w-auto sm:h-9" />
+		<a
+			href={home}
+			class="nav-logo inline-flex min-h-11 shrink-0 items-center"
+			aria-label="Guacamayo — home"
+		>
+			<Image src={logo} alt="" role="presentation" widths={[150, 260]} sizes="100px" class="h-9 w-auto sm:h-12" />
 		</a>
 		<span id="nav-links" class="nav-tile-row gap-1.5 sm:gap-2">
 			{
 				links.map((link) => (
 					<a
 						href={link.href}
-						class="nav-tile inline-flex min-h-11 shrink-0 items-center rounded px-2.5 font-mono text-xs font-bold tracking-wide whitespace-nowrap uppercase sm:px-3"
+						class="nav-tile grid min-h-11 shrink-0 rounded font-mono text-xs font-bold tracking-wide whitespace-nowrap uppercase"
 						style={`--tile-bg:${link.bg}; --tile-fg:${link.fg};`}
 					>
-						{link.label}
+						<span class="tile-flipper">
+							<span class="tile-face tile-face-front">{link.label}</span>
+							<span class="tile-face tile-face-back">{link.label}</span>
+						</span>
 					</a>
 				))
 			}
 		</span>
 		<button
 			type="button"
-			class="nav-toggle inline-flex h-11 w-11 shrink-0 flex-col items-center justify-center gap-1.5 sm:hidden"
+			class="nav-toggle inline-flex h-11 w-11 shrink-0 flex-col items-center justify-center gap-1.5 min-[780px]:hidden"
 			aria-expanded="false"
 			aria-controls="nav-links"
 			aria-label="Toggle navigation menu"
@@ -62,46 +71,97 @@ const links = [
 </nav>
 
 <style>
-	/* Mobile-first: the tile row is a hidden dropdown panel by default,
-	   toggled open by the hamburger (JS below adds/removes .is-open). At
-	   the sm breakpoint it becomes a normal always-visible inline row —
-	   plenty of width there for five tiles, so no horizontal-scroll
-	   fallback is needed on desktop the way it was before this component
-	   had a real mobile menu. overflow-y stays forced hidden regardless of
-	   layout: the rotateZ active-tile transform (see .is-active below)
-	   nudges the row's computed scrollable-overflow height by a few px
-	   even though nothing is actually meant to scroll, and this is the
-	   belt-and-suspenders guard against that ever surfacing a scrollbar. */
+	/* Mobile-first: the tile row is a dropdown panel, always display:flex
+	   (not display:none when closed) so the open/close below can actually
+	   animate — display can't be transitioned. No overflow-y: hidden here
+	   at the base level (an earlier version had one, as a guard against
+	   3D-transform artifacts nudging scrollable-overflow height) — turns
+	   out that guard was the actual cause of the horizontal scrollbar bug
+	   that kept coming back after the overflow-x: auto removal below: per
+	   the CSS overflow spec, setting one axis to anything other than
+	   visible forces the *other* axis's used value from visible to auto,
+	   so overflow-y: hidden alone was silently reintroducing overflow-x:
+	   auto on this element regardless of what the desktop rule below said.
+	   Nothing constrains this row's height at the base level (no fixed/
+	   max-height here), so there was never a real vertical scrollbar for
+	   that guard to prevent. The mobile-only block below reintroduces
+	   overflow: hidden scoped to <780px only, needed there to clip the
+	   collapse animation — that's a different, non-overlapping media
+	   query from the desktop rule the earlier bug was about, so it can't
+	   regress that fix. */
 	.nav-tile-row {
-		display: none;
-		flex-direction: column;
-		overflow-y: hidden;
-	}
-
-	.nav-tile-row.is-open {
 		display: flex;
+		flex-direction: column;
 	}
 
-	@media (min-width: 640px) {
+	/* Breakpoint is a custom 780px, not Tailwind's built-in sm (640px) —
+	   raised after direct feedback kept hitting a real, visible horizontal
+	   scrollbar on the row itself in the 640-750px range: five tiles'
+	   full content width (measured directly, not estimated) first fits
+	   with real margin at 780px.
+
+	   No overflow-x: auto here anymore — a second real bug, found right
+	   after the breakpoint fix shipped: clicking a tile (or hovering one,
+	   or it becoming .is-current) applies transform: scale(1.05), and a
+	   transformed child's paint/ink bounds count toward its parent's
+	   scrollable-overflow region in most engines even though transforms
+	   don't affect layout size. The row's own box never grows past its
+	   475px content width (nothing gives it flex-grow), so that ~3px of
+	   scale-driven growth overflowed the row's own overflow-x: auto at
+	   *every* tested width from 800px up through 1536px — not just a
+	   narrow pinch zone, confirmed by directly toggling .is-current on
+	   Book and diffing row.scrollWidth vs row.clientWidth. Since this
+	   breakpoint is now verified to always fit the row's *resting*
+	   content with real margin, overflow-x: auto was never actually
+	   protecting anything left up here — the row below 780px is always
+	   display: none instead (the other media block), so this desktop-only
+	   layout never needs the shrink-to-fit/scroll fallback that property
+	   provided. Dropping it removes the scrollbar risk entirely, since
+	   there's no overflow container left for a transform's ink bounds to
+	   overflow. */
+	@media (min-width: 780px) {
 		.nav-tile-row {
 			display: flex;
 			flex-direction: row;
 		}
 	}
 
-	/* Below sm, the open row becomes a dropdown panel under the bar rather
-	   than pushing page content down — nav's own fixed positioning is the
-	   containing block this anchors to. */
-	@media (max-width: 639.98px) {
+	/* Below the breakpoint, the open row becomes a dropdown panel under the
+	   bar rather than pushing page content down — nav's own fixed
+	   positioning is the containing block this anchors to. Closed state is
+	   max-height: 0 + opacity: 0 (not display: none) so .is-open can
+	   animate it open/closed instead of snapping — direct feedback found
+	   the mobile menu closing instantly (along with the scroll after it)
+	   read as too fast/abrupt. max-height animates toward a generous fixed
+	   cap rather than the real content height (CSS can't transition to
+	   "auto") — the row's actual height is still clamped by its own
+	   content well before reaching that cap, so it just stops growing
+	   early with no visual glitch, a standard technique for this. */
+	@media (max-width: 779.98px) {
 		.nav-tile-row {
 			position: absolute;
 			top: 100%;
 			right: 0;
 			left: 0;
 			gap: 0.5rem;
+			max-height: 0;
+			opacity: 0;
+			overflow: hidden;
+			pointer-events: none;
 			border-bottom: 1px solid rgba(244, 235, 210, 0.1);
 			background: var(--color-ink);
-			padding: 0.75rem 1rem 1rem;
+			padding-inline: 1rem;
+			transition:
+				max-height 450ms ease-in-out,
+				opacity 300ms ease-in-out,
+				padding-block 450ms ease-in-out;
+		}
+
+		.nav-tile-row.is-open {
+			max-height: 28rem;
+			opacity: 1;
+			pointer-events: auto;
+			padding-block: 0.75rem 1rem;
 		}
 
 		.nav-tile {
@@ -148,58 +208,158 @@ const links = [
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.hamburger-line {
+		.hamburger-line,
+		.nav-tile-row {
 			transition: none;
 		}
 	}
 
+	/* Flip retained (a real front/back rotateX card, not a skeuomorphic
+	   tilt) — direct feedback specifically wanted to keep the flip motion
+	   itself, just not the white/paper2 destination an earlier version
+	   flipped to. The back face is now the tile's own color, just
+	   brighter — same idea as the "current section" glow below, unified
+	   into the one thing the flip reveals, for both hover and is-current.
+
+	   overflow: hidden + explicit (not inherit) border-radius on the faces
+	   are both real fixes from earlier rounds, re-applied here: overflow
+	   clips any 3D-rotation seam to one stable rounded rect regardless of
+	   the animation, and border-radius: inherit was once found to inherit
+	   from the wrong ancestor (.tile-flipper, which never set it) rather
+	   than .nav-tile, rendering the faces square while the tile was
+	   rounded. Front and back share identical label text this time (no
+	   checkmark, which is what caused a real width mismatch and visible
+	   clip last time faces held different content) — nothing left for the
+	   two faces to disagree on. ease-in-out on every transition per direct
+	   request, not the ease/cubic-bezier curves used elsewhere in this
+	   file. */
 	.nav-tile {
+		position: relative;
+		background: transparent;
+		border-radius: 0.25rem;
+		overflow: hidden;
+		perspective: 500px;
+		transition:
+			transform 600ms ease-in-out,
+			filter 600ms ease-in-out;
+	}
+
+	.tile-flipper {
+		grid-area: 1 / 1;
+		display: grid;
+		transform-style: preserve-3d;
+		transition: transform 600ms ease-in-out;
+	}
+
+	/* Padding lives here, not on .nav-tile — the color (and the visible
+	   "tab" the padding is supposed to be inside) is on this element, not
+	   the transparent outer wrapper. */
+	.tile-face {
+		grid-area: 1 / 1;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding-inline: 24px;
+		border-radius: 0.25rem;
+		backface-visibility: hidden;
+		transition:
+			background-color 600ms ease-in-out,
+			backdrop-filter 600ms ease-in-out,
+			filter 600ms ease-in-out;
+	}
+
+	@media (min-width: 640px) {
+		.tile-face {
+			padding-inline: 26px;
+		}
+	}
+
+	/* Resting look is deliberately muted/glassy — a translucent version of
+	   the tile's own color (color-mix thins just the background, not the
+	   text, so the label stays crisp) plus backdrop-filter blur — so the
+	   flipped/current face below reads as clearly lit up, not just
+	   marginally different. */
+	.tile-face-front {
+		background: color-mix(in srgb, var(--tile-bg) 55%, transparent);
+		color: var(--tile-fg);
+		backdrop-filter: blur(8px);
+	}
+
+	/* Pre-rotated to face away at rest — turning .tile-flipper 180deg
+	   brings this around to the front while the front turns away, both in
+	   the same motion. Same color as the front, not paper2/ink — just
+	   brighter — since the flip itself is the "different state" signal
+	   now, not a hue swap. Brightness lives on the face (a plain color
+	   effect, no need to escape anything); the glow lives on .nav-tile
+	   instead of here deliberately — .nav-tile has overflow: hidden for
+	   the clip fix above, and an ancestor's overflow clips a descendant's
+	   filter output same as anything else, so a drop-shadow on this face
+	   would just get clipped away. filter: drop-shadow specifically
+	   (not box-shadow) works from .nav-tile because overflow only clips a
+	   *descendant's* filter output, not an element's own. */
+	.tile-face-back {
 		background: var(--tile-bg);
 		color: var(--tile-fg);
-		transition:
-			transform 160ms ease,
-			filter 160ms ease;
+		filter: brightness(1.3);
+		transform: rotateX(180deg);
+	}
+
+	/* The current section's tile stays flipped to its back face — full
+	   brightness + glow — for as long as that section is in view, the
+	   same destination hover reaches transiently below. */
+	.nav-tile.is-current {
+		transform: scale(1.05);
+		filter: drop-shadow(0 0 8px var(--tile-bg));
+	}
+
+	.nav-tile.is-current .tile-flipper {
+		transform: rotateX(180deg);
 	}
 
 	/* Scoped to real hover-capable pointers only — Tailwind's own hover:
 	   does this automatically, but this is hand-written CSS in this block,
 	   so it needs the same guard explicitly. Without it, touch browsers can
 	   get a hover state "stuck" on after a tap until the user taps
-	   elsewhere, which reads as broken. */
+	   elsewhere, which reads as broken. A modest scale (not the earlier
+	   1.06 that grew the last tile past the row's edge and surfaced a real
+	   scrollbar) — safe now behind the row's own overflow-x: auto fallback
+	   and the wider padding added since, but still worth keeping deliberately
+	   small. focus-visible gets the identical treatment outside the hover
+	   guard, since keyboard users tabbing through never trigger :hover. */
 	@media (hover: hover) and (pointer: fine) {
 		.nav-tile:hover {
-			transform: scale(1.06);
-			filter: brightness(1.12);
+			transform: scale(1.05);
+			filter: drop-shadow(0 0 10px var(--tile-bg));
 		}
-		.nav-tile.is-active:hover {
-			transform: rotateZ(-6deg) scale(1.06);
+		.nav-tile:hover .tile-flipper {
+			transform: rotateX(180deg);
 		}
-	}
-
-	/* Click sets a persistent "active tab" state (real click-tracking JS
-	   below, not just :active/:focus) — a Z-axis rotation, like the tile
-	   has been turned to face you. The ring stays even under
-	   reduced-motion, so the active tab is never indicated by motion
-	   alone — rotation is the bonus, not the only signal. */
-	.nav-tile.is-active {
-		transform: rotateZ(-6deg);
-		box-shadow: 0 0 0 2px var(--color-paper-2);
 	}
 
 	.nav-tile:focus-visible {
 		outline: 2px solid var(--color-paper-2);
 		outline-offset: 2px;
+		transform: scale(1.05);
+		filter: drop-shadow(0 0 10px var(--tile-bg));
 	}
 
+	.nav-tile:focus-visible .tile-flipper {
+		transform: rotateX(180deg);
+	}
+
+	/* Everything above still applies under reduced motion — hover/current
+	   still flip to the brighter back face, glow, and scale — just
+	   instantly rather than animated. That's the actual reduced-motion
+	   guidance: remove the animated transition, not the state it conveys.
+	   Zeroing out the target values instead (an earlier version of this
+	   block did) would leave reduced-motion users with no way to tell a
+	   tile is hovered or current at all, since the brighter styling only
+	   exists on the back face, only reachable by rotating to it. */
 	@media (prefers-reduced-motion: reduce) {
-		.nav-tile {
+		.nav-tile,
+		.tile-flipper,
+		.tile-face {
 			transition: none;
-		}
-		.nav-tile:hover {
-			transform: none;
-		}
-		.nav-tile.is-active {
-			transform: none;
 		}
 	}
 </style>
@@ -227,17 +387,156 @@ const links = [
 		if (e.key === "Escape") closeMenu();
 	});
 
-	// Persistent "active tab" on click — separate from :hover/:focus-visible,
-	// stays set until a different tile is clicked. Scoped to this component
-	// since Nav renders once globally; no cross-page state, resets on
-	// navigation (each page's nav starts with nothing active).
+	// Native `scroll-behavior: smooth` (global.css) runs a short, roughly
+	// fixed duration regardless of distance — fine on desktop, but direct
+	// feedback found it read as too fast/abrupt on mobile for a long jump
+	// (e.g. Booking back up to the top via the logo). Below, distance-scaled
+	// eased scrolling replaces it on mobile only; desktop keeps the native
+	// behavior untouched since that wasn't the complaint.
+	const isMobileNav = () => window.matchMedia("(max-width: 779.98px)").matches;
+	const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+	function easeInOutCubic(t: number) {
+		return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+	}
+
+	function smoothScrollTo(targetY: number) {
+		const startY = window.scrollY;
+		const distance = targetY - startY;
+		if (prefersReducedMotion || distance === 0) {
+			window.scrollTo({ top: targetY, behavior: "instant" });
+			return;
+		}
+		// Scaled to distance (clamped) rather than a flat duration — a
+		// short hop between adjacent sections and the full Booking-to-top
+		// jump shouldn't take the same amount of time.
+		const duration = Math.min(1400, Math.max(600, Math.abs(distance) * 0.6));
+		const startTime = performance.now();
+		function step(now: number) {
+			const t = Math.min((now - startTime) / duration, 1);
+			// behavior: "instant" is required here -- html has its own
+			// scroll-behavior: smooth (global.css), and without overriding
+			// it per-call, the browser smooths *each* of these per-frame
+			// jumps on top of the easing curve already driving them,
+			// compounding into a laggy, stair-stepped crawl instead of one
+			// clean animation.
+			window.scrollTo({ top: startY + distance * easeInOutCubic(t), behavior: "instant" });
+			if (t < 1) requestAnimationFrame(step);
+		}
+		requestAnimationFrame(step);
+	}
+
+	// Empty hash (the logo) scrolls to the very top; scroll-padding-top
+	// (global.css) is read live rather than hardcoded so the offset can't
+	// drift out of sync with the fixed nav's real height.
+	function scrollToHash(hash: string) {
+		const targetEl = hash ? document.getElementById(hash) : null;
+		const offset = parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0;
+		const targetY = targetEl ? targetEl.getBoundingClientRect().top + window.scrollY - offset : 0;
+		smoothScrollTo(targetY);
+	}
+
+	// The logo previously had no click handler at all — on the index page,
+	// its href is identical to the current URL (no hash), so a native click
+	// was a same-URL navigation: a full reload rather than any in-page
+	// scroll. That's true on every viewport width, not just mobile (unlike
+	// the nav-tile links below, which do have real #hash hrefs and so get
+	// a genuine native smooth-scroll on desktop already) — so this one
+	// isn't gated to isMobileNav(), only to actually being on the page the
+	// logo points at (e.g. not on 404.astro, where it should really
+	// navigate).
+	const logoLink = document.querySelector<HTMLAnchorElement>(".nav-logo");
+	logoLink?.addEventListener("click", (e) => {
+		const href = logoLink.getAttribute("href");
+		if (!href || new URL(href, window.location.href).pathname !== window.location.pathname) {
+			return; // linking to a different page (e.g. from 404) — native navigation
+		}
+		e.preventDefault();
+		closeMenu();
+		history.pushState(null, "", href);
+		scrollToHash("");
+	});
+
+	// Same-page anchor click on mobile should close the dropdown so it
+	// doesn't sit open over the section just jumped to, and (mobile only)
+	// use the same eased scroll as the logo above instead of the native
+	// jump, for the same reason.
 	document.querySelectorAll<HTMLAnchorElement>(".nav-tile").forEach((tile) => {
-		tile.addEventListener("click", () => {
-			document.querySelectorAll(".nav-tile").forEach((t) => t.classList.remove("is-active"));
-			tile.classList.add("is-active");
-			// Same-page anchor click on mobile — close the dropdown so it
-			// doesn't sit open over the section the user just jumped to.
+		tile.addEventListener("click", (e) => {
 			closeMenu();
+			if (!isMobileNav()) return;
+			e.preventDefault();
+			const hash = new URL(tile.href).hash.slice(1);
+			history.pushState(null, "", tile.getAttribute("href"));
+			scrollToHash(hash);
 		});
 	});
+
+	// Scroll-spy for "current section" — separate from the hover state,
+	// which is transient and can't indicate scroll position. Section ids
+	// are read straight from each tile's own href rather than a second
+	// hardcoded list, so the two can't drift apart. A thin band centered
+	// in the viewport (rootMargin shrinks the observed area top and
+	// bottom) decides which section counts as "current," rather than the
+	// default "any pixel visible" behavior, which would mark two adjacent
+	// sections current at once during the scroll between them.
+	//
+	// No pulse/animation bookkeeping needed here anymore — .is-current is
+	// just a class toggle, and .nav-tile's own CSS transition (ease-in-out)
+	// handles animating smoothly into the brighter/glowing state on its
+	// own, the same way :hover does. That's also what fully retired the
+	// double-flip bug this nav went through a few rounds of chasing: there's
+	// no second, separately-timed animation left to ever race against hover.
+	const tiles = document.querySelectorAll<HTMLAnchorElement>(".nav-tile");
+	const tileById = new Map(
+		[...tiles].map((tile) => [new URL(tile.href).hash.slice(1), tile]),
+	);
+	const sections = [...tileById.keys()]
+		.map((id) => document.getElementById(id))
+		.filter((el): el is HTMLElement => el !== null);
+
+	let currentTile: HTMLAnchorElement | null = null;
+
+	if ("IntersectionObserver" in window && sections.length) {
+		const spy = new IntersectionObserver(
+			(entries) => {
+				for (const entry of entries) {
+					const tile = tileById.get(entry.target.id);
+					if (!tile) continue;
+
+					if (!entry.isIntersecting) {
+						// The section that WAS current just left the band (e.g.
+						// scrolling back up above every section, into the Hero) —
+						// clear it rather than leaving a stale tile marked current
+						// forever, which is what let a screenshot show "Music"
+						// still glowing while the page sat scrolled to the very
+						// top. If a different section is entering in this same
+						// batch, its own isIntersecting:true branch below runs
+						// too and simply overwrites this with the new one.
+						if (tile === currentTile) {
+							tile.classList.remove("is-current");
+							currentTile = null;
+							history.replaceState(null, "", window.location.pathname);
+						}
+						continue;
+					}
+
+					if (tile === currentTile) continue;
+
+					tiles.forEach((t) => t.classList.remove("is-current"));
+					tile.classList.add("is-current");
+					currentTile = tile;
+					// replaceState, not pushState — scrolling shouldn't spam the
+					// back button with one history entry per section, and not
+					// location.hash directly either, since setting that triggers
+					// a real anchor-jump/scroll on its own, fighting the scroll
+					// that's already in progress and driving this in the first
+					// place.
+					history.replaceState(null, "", tile.getAttribute("href"));
+				}
+			},
+			{ rootMargin: "-45% 0px -45% 0px" },
+		);
+		sections.forEach((section) => spy.observe(section));
+	}
 </script>

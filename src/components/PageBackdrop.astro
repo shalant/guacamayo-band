@@ -1,28 +1,166 @@
 ---
-// Full-Bleed Pin: the flyer art pinned behind the whole page as you scroll
-// (sticky layer + negative-margin content, so it never scrolls away until
-// content with its own background covers it). Swap the Image source or the
+// Full-Bleed Pin: the flyer art pinned behind the *entire* page for the
+// whole scroll, not just the hero — was sticky + negative-margin content
+// (which only stays pinned for exactly one viewport's worth of scroll,
+// then unsticks for good), switched to plain position: fixed once every
+// section below needed to be a translucent glass panel over this backdrop
+// rather than opaque bg-ink. Fixed doesn't take up flow space at all, so
+// the negative-margin trick main previously needed to overlap it is gone
+// too — main just starts at the top normally. Swap the Image source or the
 // filter/position classes below to try a different backdrop treatment.
+//
+// Three transform layers, not one:
+//  - .backdrop-drift (outer div): the slow ambient Ken Burns loop, a CSS
+//    @keyframes animation.
+//  - .backdrop-base (the "everything except the parrot" copy of the
+//    flyer): gets the mouse/scroll 3D tilt at its original amount.
+//  - .backdrop-parrot (a second, identical copy of the *same* flyer.jpg,
+//    masked to only the right-hand region where the parrot sits): gets
+//    the same tilt input, amplified, so it visibly leads the rest of the
+//    poster — a cheap fake of "the parrot moving independently," since
+//    there's no real cutout asset (see DESIGN_NOTES.md/TODO.md — a real
+//    isolated parrot PNG would replace this masking hack outright).
+// Each of these three needs its own element to animate `transform`
+// independently — a CSS animation on an element always wins over any
+// transform JS sets inline on that *same* element, so combining any two
+// of these on one node would silently make one of them invisible.
 import { Image } from "astro:assets";
 import flyer from "../assets/flyer.jpg";
 ---
 
-<div class="relative">
-	<div class="sticky top-0 -z-10 h-dvh overflow-hidden">
+<div class="fixed inset-0 -z-10 overflow-hidden [perspective:1200px]">
+	<div class="backdrop-drift absolute inset-0 h-full w-full motion-safe:animate-[backdrop-drift_28s_ease-in-out_infinite]">
 		<Image
 			src={flyer}
 			alt=""
 			role="presentation"
 			widths={[640, 1024, 1600, 2200]}
 			sizes="100vw"
-			class="absolute inset-0 h-full w-full object-cover object-[82%_34%] [filter:sepia(.15)_saturate(1.2)_contrast(1.05)_brightness(.6)] motion-safe:animate-[backdrop-drift_28s_ease-in-out_infinite]"
+			class="backdrop-tilt backdrop-base absolute inset-0 h-full w-full object-cover object-[82%_34%] [filter:saturate(1.4)_contrast(1.08)_brightness(1.38)]"
 		/>
-		<div
-			class="absolute inset-0 bg-gradient-to-b from-ink/15 to-ink/60"
-		>
-		</div>
+		<Image
+			src={flyer}
+			alt=""
+			role="presentation"
+			widths={[640, 1024, 1600, 2200]}
+			sizes="100vw"
+			class="backdrop-tilt backdrop-parrot absolute inset-0 h-full w-full object-cover object-[82%_34%] [filter:saturate(1.4)_contrast(1.08)_brightness(1.38)]"
+		/>
 	</div>
-	<main class="relative -mt-[100dvh]">
-		<slot />
-	</main>
+	<div class="absolute inset-0 bg-gradient-to-b from-ink/15 to-ink/55"></div>
 </div>
+<main class="relative">
+	<slot />
+</main>
+
+<style>
+	.backdrop-tilt {
+		/* Static overscan margin, independent of the outer drift's own
+		   scale — object-cover only guarantees full coverage in the flat,
+		   untransformed state, so rotating this in 3D without extra scale
+		   would reveal the container's edge at the tilt's corners. The
+		   parrot layer moves *more* (amplified in the script below), so it
+		   gets extra margin on top of that same base amount. */
+		transform: scale(1.08);
+		transition: transform 300ms ease-out;
+		will-change: transform;
+	}
+
+	.backdrop-parrot {
+		/* translateZ needs `perspective` on an ancestor to do anything
+		   visible (set on the outer fixed div above) -- positive values
+		   pull the layer toward the viewer, reinforcing "this is the
+		   foreground" on top of the amplified rotation already doing that
+		   job below. */
+		transform: scale(1.15) translateZ(60px);
+	}
+
+	/* Splits the two identical copies of the same image left/right —
+	   .backdrop-base keeps everything except roughly where the parrot
+	   sits (lettering, ticket badge, background), .backdrop-parrot keeps
+	   only that region. A soft ~20%-wide blend zone (not a hard line) is
+	   what makes this readable as "the parrot" rather than an obviously
+	   fake seam down the middle of the poster — there's no real cutout
+	   asset behind this (see DESIGN_NOTES.md), so the blur is doing real
+	   work hiding the approximation. Stops picked from the parrot's
+	   actual rendered position in this crop (object-[82%_34%]), not the
+	   source image's own coordinates -- object-fit/position change how
+	   the two relate at every viewport size, so anything traced from the
+	   raw file would drift out of alignment on screen. */
+	.backdrop-base {
+		-webkit-mask-image: linear-gradient(to right, black 0%, black 45%, transparent 65%);
+		mask-image: linear-gradient(to right, black 0%, black 45%, transparent 65%);
+	}
+
+	.backdrop-parrot {
+		-webkit-mask-image: linear-gradient(to right, transparent 35%, black 55%, black 100%);
+		mask-image: linear-gradient(to right, transparent 35%, black 55%, black 100%);
+	}
+</style>
+
+<script>
+	// Mouse/scroll-driven 3D tilt, not a full spin — reference was a video
+	// of a poster subtly tilting in 3D as the camera moves/scrolls past it,
+	// which reads as depth rather than motion for motion's sake. rAF-
+	// throttled (schedule/ticking) so a stream of mousemove events doesn't
+	// write to style on every single one; the 300ms ease-out transition
+	// (CSS) is what actually gives the "elegant follow" feel rather than a
+	// snap-to-cursor jitter.
+	//
+	// The parrot layer gets the same mouse/scroll input, just scaled up —
+	// a closer/foreground element visibly moving more than what's behind
+	// it is the actual depth cue parallax relies on, not just "it moves
+	// on its own" for no reason.
+	const base = document.querySelector<HTMLElement>(".backdrop-base");
+	const parrot = document.querySelector<HTMLElement>(".backdrop-parrot");
+	const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+	if (base && parrot && !prefersReducedMotion) {
+		const MAX_MOUSE_TILT = 5; // degrees, base layer
+		const MAX_SCROLL_TILT = 4; // degrees, base layer, added as you scroll down
+		const PARROT_AMPLIFY = 1.8; // parrot layer moves this much more than the base
+		let mouseX = 0;
+		let mouseY = 0;
+		let scrollProgress = 0;
+		let ticking = false;
+
+		function apply() {
+			const rotateY = mouseX * MAX_MOUSE_TILT;
+			const rotateX = -mouseY * MAX_MOUSE_TILT + scrollProgress * MAX_SCROLL_TILT;
+			base!.style.transform = `scale(1.08) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg)`;
+			parrot!.style.transform =
+				`scale(1.15) translateZ(60px) rotateX(${(rotateX * PARROT_AMPLIFY).toFixed(2)}deg) rotateY(${(rotateY * PARROT_AMPLIFY).toFixed(2)}deg)`;
+			ticking = false;
+		}
+
+		function schedule() {
+			if (!ticking) {
+				ticking = true;
+				requestAnimationFrame(apply);
+			}
+		}
+
+		window.addEventListener(
+			"mousemove",
+			(e) => {
+				// Normalized -1..1 from viewport center, not cursor position on
+				// the (much taller, position: fixed) backdrop itself — the
+				// visible viewport is what the user actually perceives moving
+				// their pointer across.
+				mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+				mouseY = (e.clientY / window.innerHeight) * 2 - 1;
+				schedule();
+			},
+			{ passive: true },
+		);
+
+		function updateScrollProgress() {
+			const doc = document.documentElement;
+			const max = doc.scrollHeight - doc.clientHeight;
+			scrollProgress = max > 0 ? Math.min(1, window.scrollY / max) : 0;
+			schedule();
+		}
+		window.addEventListener("scroll", updateScrollProgress, { passive: true });
+		updateScrollProgress();
+	}
+</script>

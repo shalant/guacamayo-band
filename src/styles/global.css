@@ -10,6 +10,17 @@ html {
   scroll-padding-top: 4.5rem;
 }
 
+/* Smooth anchor-jump scrolling (nav tiles, "Tour Dates" CTA, ticket links)
+   instead of an instant jump. Gated on prefers-reduced-motion rather than
+   applied unconditionally — scroll-behavior: smooth is itself a motion
+   effect, and this is the standard accessible-safe way to offer it: off
+   by default, on only when the visitor hasn't asked for reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
 body {
   background: var(--color-ink);
   color: var(--color-paper-2);
@@ -17,16 +28,26 @@ body {
 }
 
 /* Slow, subtle Ken Burns drift on the pinned backdrop — reads as "alive,"
-   not as a slideshow. Scale stays under 1.05 and the pan is tiny on
-   purpose; overflow-hidden on the parent crops it cleanly. Applied via
-   Tailwind's motion-safe: variant, so prefers-reduced-motion gets a fully
-   static image with zero extra markup. */
+   not as a slideshow. overflow-hidden on the parent crops it cleanly.
+   Applied via Tailwind's motion-safe: variant, so prefers-reduced-motion
+   gets a fully static image with zero extra markup.
+
+   Scale here has to cover the *rotation*, not just the pan — a ±4deg
+   rotate() (Z-axis) needs roughly cos(4deg) + aspectRatio * sin(4deg) of
+   scale to keep the rotated box covering a wide/short viewport's edges
+   (a tall/narrow one needs almost exactly the same amount, just the
+   other axis binds). At a ~2.3-2.5 aspect ratio that's already ~1.17-1.2
+   — nowhere near the 1.02/1.08 an earlier version of this used, which
+   was sized for the old translate-only pan and left a real black gap at
+   the top/bottom edges on wide screens once rotation was added (caught
+   visually, not just by the math). 1.24/1.30 below adds real margin on
+   top of that minimum. */
 @keyframes backdrop-drift {
   0%, 100% {
-    transform: scale(1) translate(0, 0);
+    transform: scale(1.1) translate(0, 0) rotate(-4deg);
   }
   50% {
-    transform: scale(1.045) translate(-1%, 0.6%);
+    transform: scale(1.14) translate(-1%, 0.6%) rotate(4deg);
   }
 }
 
@@ -56,5 +77,23 @@ body {
   .flap-tile {
     transform: none;
     animation: none !important;
+  }
+}
+
+/* Fades each content section's glass tint out toward the right on wide
+   screens, instead of a flat color filling the empty space past the
+   (much narrower) text column. Off below xl (1280px) -- there's no room
+   to spare on narrower viewports, mobile/tablet keep the original full
+   flat tint. The 60% opaque-through stop is chosen so even the widest
+   content block on the page (Shows' max-w-2xl calendar, ~736px including
+   its own left padding) still clears it with margin at 1280px (60% =
+   768px); every wider breakpoint only adds more room since the stops are
+   percentage-based but the content itself stays a fixed max-width. */
+@media (min-width: 1280px) {
+  .section-glass-fade {
+    -webkit-mask-image: linear-gradient(to right, black 0%, black 60%, transparent 90%);
+    mask-image: linear-gradient(to right, black 0%, black 60%, transparent 90%);
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
   }
 }

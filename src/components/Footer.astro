@@ -1,0 +1,77 @@
+---
+// Closes the page after Booking — solid bg-ink (not a translucent glass
+// panel like the sections above it), deliberately, so it reads as real
+// closure rather than the bold red Booking section just abruptly
+// stopping mid-backdrop. Echoes the nav's own language (logo, mono
+// uppercase links, same five nav-tile colors) without cloning its flip
+// mechanic — a second set of flip-cards down here would be motion for
+// motion's sake on a set of links that are already redundant with the
+// nav above. Not fixed/sticky — normal flow, so it only shows once
+// someone's actually scrolled to the end.
+import { Image } from "astro:assets";
+import logo from "../assets/logo.png";
+
+const home = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/`;
+
+// Same five links/colors as Nav.astro — kept as a separate array rather
+// than importing Nav's, since Nav's also carries fg/flip-specific fields
+// this component doesn't use.
+const links = [
+	{ label: "About", href: `${home}#about`, color: "var(--color-gold)" },
+	{ label: "Music", href: `${home}#music`, color: "var(--color-orange)" },
+	{ label: "Shows", href: `${home}#shows`, color: "var(--color-teal-deep)" },
+	{ label: "Press", href: `${home}#press`, color: "var(--color-paper-2)" },
+	{ label: "Book", href: `${home}#book`, color: "var(--color-red)" },
+];
+
+const year = new Date().getFullYear();
+---
+
+<footer class="relative bg-ink px-8 py-12 sm:px-16">
+	<div
+		class="flex flex-col items-center gap-8 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left"
+	>
+		<a href={home} class="inline-flex items-center gap-3" aria-label="Guacamayo — home">
+			<Image src={logo} alt="" role="presentation" widths={[80, 120]} sizes="60px" class="h-10 w-auto" />
+			<span class="font-mono text-xs tracking-widest text-paper-2/50 uppercase">
+				Funky Latin Groove — Chicago
+			</span>
+		</a>
+		<nav aria-label="Footer">
+			<ul class="flex flex-wrap justify-center gap-x-6 gap-y-2 sm:justify-end">
+				{
+					links.map((link) => (
+						<li>
+							<a
+								href={link.href}
+								class="footer-link font-mono text-xs font-bold tracking-wide text-paper-2/70 uppercase"
+								style={`--link-color:${link.color}`}
+							>
+								{link.label}
+							</a>
+						</li>
+					))
+				}
+			</ul>
+		</nav>
+	</div>
+	<p class="mt-10 text-center font-mono text-[11px] tracking-wide text-paper-2/40 uppercase">
+		© {year} Guacamayo
+	</p>
+</footer>
+
+<style>
+	.footer-link {
+		transition: color 200ms ease;
+	}
+
+	.footer-link:hover,
+	.footer-link:focus-visible {
+		color: var(--link-color);
+	}
+
+	.footer-link:focus-visible {
+		outline: 2px solid var(--color-paper-2);
+		outline-offset: 4px;
+	}
+</style>
