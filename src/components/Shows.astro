@@ -68,7 +68,7 @@ const weekdayLabels = Array.from({ length: 7 }, (_, i) =>
 ---
 
 <section id="shows" class="relative px-8 py-24 sm:px-16 sm:py-32">
-	<div class="absolute inset-0 -z-10 bg-ink/55 backdrop-blur-md section-glass-fade"></div>
+	<div class="absolute inset-0 -z-10 bg-ink/76 backdrop-blur-md section-glass-fade"></div>
 	<div class="absolute inset-0 -z-10 bg-teal-deep/25 section-glass-fade"></div>
 	<h2 class="font-display-alt text-xl font-black">Shows</h2>
 	<p class="mt-2 max-w-md text-sm text-paper-2/80">
@@ -104,14 +104,14 @@ const weekdayLabels = Array.from({ length: 7 }, (_, i) =>
 
 	{
 		sorted.length === 0 ? (
-			<p class="mt-8 font-mono text-sm text-paper-2/60">
+			<p class="mt-8 font-mono text-sm text-paper-2/78">
 				No shows booked right now — check back soon.
 			</p>
 		) : (
 			<div id="shows-panel-list" class="mt-10 max-w-2xl" role="tabpanel">
 				{groups.map((group) => (
 					<div class="mb-8 last:mb-0">
-						<p class="mb-3 font-mono text-xs tracking-widest text-paper-2/50 uppercase">
+						<p class="mb-3 font-mono text-xs tracking-widest text-paper-2/68 uppercase">
 							{group.label}
 						</p>
 						<ul class="divide-y divide-dashed divide-paper-2/15">
@@ -130,15 +130,15 @@ const weekdayLabels = Array.from({ length: 7 }, (_, i) =>
 													</span>
 												))}
 											</div>
-											<span class="font-mono text-[10px] tracking-wide text-paper-2/60 uppercase">
+											<span class="font-mono text-[10px] tracking-wide text-paper-2/78 uppercase">
 												{monthShortFmt.format(d)}
 											</span>
 										</div>
 										<div class="min-w-0 flex-1">
 											<p class="truncate font-semibold text-paper-2">{show.venue}</p>
-											<p class="truncate text-sm text-paper-2/60">{show.city}</p>
+											<p class="truncate text-sm text-paper-2/78">{show.city}</p>
 										</div>
-										<div class="hidden font-mono text-xs text-paper-2/60 sm:block">
+										<div class="hidden font-mono text-xs text-paper-2/78 sm:block">
 											{show.time}
 										</div>
 										<a
@@ -162,10 +162,10 @@ const weekdayLabels = Array.from({ length: 7 }, (_, i) =>
 				{
 					calMonths.map((cal) => (
 						<div class="mb-10 last:mb-0">
-							<p class="mb-3 font-mono text-xs tracking-widest text-paper-2/50 uppercase">{cal.label}</p>
+							<p class="mb-3 font-mono text-xs tracking-widest text-paper-2/68 uppercase">{cal.label}</p>
 							<div class="grid grid-cols-7 gap-1 text-center">
 								{weekdayLabels.map((w) => (
-									<div class="pb-1 font-mono text-[10px] tracking-wide text-paper-2/50 uppercase">{w}</div>
+									<div class="pb-1 font-mono text-[10px] tracking-wide text-paper-2/68 uppercase">{w}</div>
 								))}
 								{Array.from({ length: cal.firstWeekday }).map(() => (
 									<div />
@@ -180,7 +180,7 @@ const weekdayLabels = Array.from({ length: 7 }, (_, i) =>
 											{day}
 										</div>
 									) : (
-										<div class="cal-day flex aspect-square items-center justify-center rounded-md border border-paper-2/10 font-mono text-xs text-paper-2/40">
+										<div class="cal-day flex aspect-square items-center justify-center rounded-md border border-paper-2/10 font-mono text-xs text-paper-2/68">
 											{day}
 										</div>
 									);
