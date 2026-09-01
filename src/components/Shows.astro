@@ -12,6 +12,7 @@ const sorted = [...allShows].sort((a, b) => a.date.localeCompare(b.date));
 const monthFmt = new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" });
 const dayFmt = new Intl.DateTimeFormat("en-US", { day: "2-digit" });
 const monthShortFmt = new Intl.DateTimeFormat("en-US", { month: "short" });
+const weekdayShortFmt = new Intl.DateTimeFormat("en-US", { weekday: "short" });
 
 type Group = { label: string; items: typeof sorted };
 const groups: Group[] = [];
@@ -25,13 +26,81 @@ for (const show of sorted) {
 		groups.push({ label, items: [show] });
 	}
 }
+
+// Traditional month-grid view, alongside the ticket-stub list above —
+// added for prospective musicians scanning for open dates/availability,
+// who think in calendar terms ("what's free the week of the 20th") rather
+// than "what's the next show." Built from the same `sorted` show data, not
+// a second source of truth — a month only appears here if it actually has
+// a show in it, same "don't render a whole grid of nothing" spirit as the
+// list's own empty state.
+type CalMonth = {
+	year: number;
+	monthIndex: number;
+	label: string;
+	firstWeekday: number;
+	daysInMonth: number;
+	showsByDay: Map<number, typeof sorted>;
+};
+const calMonths: CalMonth[] = [];
+for (const show of sorted) {
+	const d = new Date(show.date + "T00:00:00");
+	const year = d.getFullYear();
+	const monthIndex = d.getMonth();
+	let cal = calMonths.find((c) => c.year === year && c.monthIndex === monthIndex);
+	if (!cal) {
+		cal = {
+			year,
+			monthIndex,
+			label: monthFmt.format(d),
+			firstWeekday: new Date(year, monthIndex, 1).getDay(),
+			daysInMonth: new Date(year, monthIndex + 1, 0).getDate(),
+			showsByDay: new Map(),
+		};
+		calMonths.push(cal);
+	}
+	const day = d.getDate();
+	cal.showsByDay.set(day, [...(cal.showsByDay.get(day) ?? []), show]);
+}
+const weekdayLabels = Array.from({ length: 7 }, (_, i) =>
+	weekdayShortFmt.format(new Date(2026, 0, 4 + i)), // a real Sunday-Saturday week, arbitrary date
+);
 ---
 
-<section id="shows" class="bg-ink px-8 py-16 sm:px-16">
+<section id="shows" class="relative px-8 py-24 sm:px-16 sm:py-32">
+	<div class="absolute inset-0 -z-10 bg-ink/55 backdrop-blur-md section-glass-fade"></div>
+	<div class="absolute inset-0 -z-10 bg-teal-deep/25 section-glass-fade"></div>
 	<h2 class="font-display-alt text-xl font-black">Shows</h2>
 	<p class="mt-2 max-w-md text-sm text-paper-2/80">
 		Every stop this season, Chicago and beyond.
 	</p>
+
+	{
+		sorted.length > 0 && (
+			<div class="mt-6 flex gap-2" role="tablist" aria-label="Shows view">
+				<button
+					type="button"
+					class="shows-tab"
+					data-view="list"
+					role="tab"
+					aria-selected="true"
+					aria-controls="shows-panel-list"
+				>
+					List
+				</button>
+				<button
+					type="button"
+					class="shows-tab"
+					data-view="calendar"
+					role="tab"
+					aria-selected="false"
+					aria-controls="shows-panel-calendar"
+				>
+					Calendar
+				</button>
+			</div>
+		)
+	}
 
 	{
 		sorted.length === 0 ? (
@@ -39,7 +108,7 @@ for (const show of sorted) {
 				No shows booked right now — check back soon.
 			</p>
 		) : (
-			<div class="mt-10 max-w-2xl">
+			<div id="shows-panel-list" class="mt-10 max-w-2xl" role="tabpanel">
 				{groups.map((group) => (
 					<div class="mb-8 last:mb-0">
 						<p class="mb-3 font-mono text-xs tracking-widest text-paper-2/50 uppercase">
@@ -87,6 +156,56 @@ for (const show of sorted) {
 			</div>
 		)
 	}
+	{
+		sorted.length > 0 && (
+			<div id="shows-panel-calendar" class="mt-10 max-w-2xl" role="tabpanel" hidden>
+				{
+					calMonths.map((cal) => (
+						<div class="mb-10 last:mb-0">
+							<p class="mb-3 font-mono text-xs tracking-widest text-paper-2/50 uppercase">{cal.label}</p>
+							<div class="grid grid-cols-7 gap-1 text-center">
+								{weekdayLabels.map((w) => (
+									<div class="pb-1 font-mono text-[10px] tracking-wide text-paper-2/50 uppercase">{w}</div>
+								))}
+								{Array.from({ length: cal.firstWeekday }).map(() => (
+									<div />
+								))}
+								{Array.from({ length: cal.daysInMonth }, (_, i) => i + 1).map((day) => {
+									const dayShows = cal.showsByDay.get(day);
+									return dayShows ? (
+										<div
+											class="cal-day cal-day-show flex aspect-square items-center justify-center rounded-md font-display-alt text-sm font-black text-ink"
+											title={dayShows.map((s) => `${s.venue} — ${s.time}`).join(", ")}
+										>
+											{day}
+										</div>
+									) : (
+										<div class="cal-day flex aspect-square items-center justify-center rounded-md border border-paper-2/10 font-mono text-xs text-paper-2/40">
+											{day}
+										</div>
+									);
+								})}
+							</div>
+							<ul class="mt-4 space-y-1">
+								{[...cal.showsByDay.entries()]
+									.sort(([a], [b]) => a - b)
+									.flatMap(([day, dayShows]) =>
+										dayShows.map((show) => (
+											<li class="font-mono text-xs text-paper-2/70">
+												<span class="text-paper-2">
+													{monthShortFmt.format(new Date(cal.year, cal.monthIndex, day))} {day}
+												</span>{" "}
+												— {show.venue}, {show.time}
+											</li>
+										)),
+									)}
+							</ul>
+						</div>
+					))
+				}
+			</div>
+		)
+	}
 </section>
 
 <script>
@@ -112,4 +231,63 @@ for (const show of sorted) {
 		// as-is rather than leaving them stuck mid-flip.
 		document.querySelectorAll(".flap-tile").forEach((tile) => tile.classList.add("is-visible"));
 	}
+
+	// List/Calendar tab switching — plain hidden-attribute toggling, not a
+	// CSS-only approach, so assistive tech gets a real change in what's in
+	// the accessibility tree rather than just a visual hide.
+	const tabs = document.querySelectorAll<HTMLButtonElement>(".shows-tab");
+	const panels: Record<string, HTMLElement | null> = {
+		list: document.getElementById("shows-panel-list"),
+		calendar: document.getElementById("shows-panel-calendar"),
+	};
+	tabs.forEach((tab) => {
+		tab.addEventListener("click", () => {
+			const view = tab.dataset.view ?? "list";
+			tabs.forEach((t) => t.setAttribute("aria-selected", String(t === tab)));
+			for (const [key, panel] of Object.entries(panels)) {
+				if (panel) panel.hidden = key !== view;
+			}
+		});
+	});
 </script>
+
+<style>
+	.shows-tab {
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		font-weight: 700;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+		padding: 0.5rem 1rem;
+		border-radius: 999px;
+		border: 1px solid rgba(244, 235, 210, 0.4);
+		background: transparent;
+		color: var(--color-paper-2);
+		cursor: pointer;
+		transition:
+			background-color 150ms ease,
+			border-color 150ms ease;
+	}
+
+	.shows-tab[aria-selected="true"] {
+		background: var(--color-teal-deep);
+		border-color: var(--color-teal-deep);
+	}
+
+	.shows-tab:hover {
+		border-color: var(--color-paper-2);
+	}
+
+	.shows-tab:focus-visible {
+		outline: 2px solid var(--color-paper-2);
+		outline-offset: 2px;
+	}
+
+	/* Marked days get the same gold accent the list view's date tiles use,
+	   for the same "this is a real date, not decoration" read. Unmarked
+	   days stay a quiet outlined cell — present for calendar structure,
+	   not competing for attention. */
+	.cal-day-show {
+		background: var(--color-gold);
+	}
+</style>

@@ -10,7 +10,9 @@ import { tracks } from "../data/videos";
 const trackIds = tracks.map((t) => t.id);
 ---
 
-<section id="music" class="bg-ink px-8 py-16 sm:px-16">
+<section id="music" class="relative px-8 py-24 sm:px-16 sm:py-32">
+	<div class="absolute inset-0 -z-10 bg-ink/55 backdrop-blur-md section-glass-fade"></div>
+	<div class="absolute inset-0 -z-10 bg-orange/25 section-glass-fade"></div>
 	<h2 class="font-display-alt text-xl font-black">Music</h2>
 	<p class="mt-2 max-w-md text-sm text-paper-2/80">
 		Live clips and the band's own reel — pick a track.
@@ -21,7 +23,7 @@ const trackIds = tracks.map((t) => t.id);
 			<div id="yt-player" class="h-full w-full"></div>
 		</div>
 
-		<ul class="flex w-full max-w-md flex-col gap-1">
+		<ul class="flex w-full min-w-0 max-w-md flex-col gap-1">
 			{
 				tracks.map((track, i) => (
 					<li>
