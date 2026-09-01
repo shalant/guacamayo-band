@@ -1,6 +1,6 @@
 # Design Notes
 
-**Status (2026-08-30):** hero direction chosen and built (Full-Bleed Pin). Music/Shows/Book sections are placeholders — real content not written yet. See `TODO.md`.
+**Status (2026-09-01):** hero direction chosen and built (Full-Bleed Pin). All sections built with real (some still first-draft) content — About, Music, Shows, Press, Booking, Footer. PR #17 (nav flip/scroll polish, footer, Carnival brightness pass, backdrop parallax tilt/rotation, real WCAG contrast fixes) merged to `master` 2026-09-01, live at <https://shalant.github.io/guacamayo-band/>. Also being added to dougrosenbergdev.com as a case study. See `TODO.md` for what's still open (Photo gallery, real band-voice bio rewrite, real booking inbox, domain move).
 
 ## Why this project exists
 
