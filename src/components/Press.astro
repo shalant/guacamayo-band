@@ -4,10 +4,26 @@
 // resized/optimized web versions astro:assets generates), no invented press
 // quotes or reviews since none exist yet. Add real ones here as they come in.
 // BASE_URL isn't guaranteed to end in a slash — see the same helper in Layout.astro.
+import { Image } from "astro:assets";
+import grooveFacts from "../assets/groove-facts.jpg";
+
 const assetUrl = (path: string) => `${import.meta.env.BASE_URL.replace(/\/$/, "")}/${path}`;
 const assets = [
 	{ label: "Logo (PNG)", href: assetUrl("press/guacamayo-logo.png") },
 	{ label: "Show flyer (JPG)", href: assetUrl("press/guacamayo-flyer.jpg") },
+];
+
+// "Spread the Groove" — a fan-made "Guaca Mayo" condiment gag (Chicago-flag
+// mock packaging, the real lineup listed as "ingredients"). Not part of the
+// core brand identity above, so kept as a clearly separate, clearly-labeled
+// bonus rather than mixed into the official logo/flyer downloads. The
+// artwork itself prints "www.casatrianaflamenco.org" (not this band's site)
+// — unresolved, see TODO.md — so it's presented as fun downloadable art here
+// rather than linked anywhere as a live URL.
+const extras = [
+	{ label: "Groove Facts (square)", href: assetUrl("press/guaca-mayo-groove-facts.jpg") },
+	{ label: "Jar label (front/back)", href: assetUrl("press/guaca-mayo-jar-card.jpg") },
+	{ label: "Jar poster", href: assetUrl("press/guaca-mayo-jar-bottle.jpg") },
 ];
 ---
 
@@ -36,4 +52,37 @@ const assets = [
 			))
 		}
 	</ul>
+	<div class="mt-10 flex flex-col gap-4 border-t border-ink/15 pt-8 sm:flex-row sm:items-center">
+		<Image
+			src={grooveFacts}
+			alt='"Guaca Mayo" novelty label art, styled like a nutrition-facts panel, listing the band as ingredients'
+			widths={[160, 220]}
+			sizes="140px"
+			class="w-32 shrink-0 rounded-lg shadow-lg sm:w-36"
+		/>
+		<div>
+			<h3 class="font-mono text-xs font-bold tracking-wide text-ink/70 uppercase">
+				Bonus: Spread the Groove
+			</h3>
+			<p class="mt-1 max-w-md text-sm text-ink/80">
+				A fan-made "Guaca Mayo" gag — Chicago-flag mock packaging with the real lineup listed
+				as "ingredients." Not official merch, just for fun.
+			</p>
+			<ul class="mt-3 flex flex-wrap gap-3">
+				{
+					extras.map((asset) => (
+						<li>
+							<a
+								href={asset.href}
+								download
+								class="inline-flex min-h-11 items-center rounded-full border border-ink/40 px-4 py-2 font-mono text-xs tracking-wide text-ink uppercase transition-colors hover:border-ink"
+							>
+								{asset.label}
+							</a>
+						</li>
+					))
+				}
+			</ul>
+		</div>
+	</div>
 </section>
