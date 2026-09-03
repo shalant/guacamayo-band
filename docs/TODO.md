@@ -13,6 +13,15 @@ Not ordered/prioritized — pull from whichever's relevant.
 - [x] ~~About/bio~~ — built (`src/components/About.astro`), placed right after Hero. Bio copy is now a **second draft using only verified facts** (lineup, instruments, genre, city, the real songs the band covers, established setting language) — longer and more specific than the first pass, still no invented backstory. Swap for the band's own voice before launch.
 - [ ] Confirm exact band-member spelling/instrument credits against the flyer before publishing (Doug Rosenberg/sax, Jack Zará/bass, Manuel Reyes/guitar, Javier Saume Mazzei/drums)
 
+## Booking growth (monthly gigs + $2000 private parties)
+
+Two different asks need different trust signals — see the 2026-09-01 conversation. Club/venue gigs mostly need the EPK + a live contact path; private parties additionally need pricing transparency and social proof before someone will even ask.
+
+- [ ] Get the real booking email live — `hello@guacamayoband.com` is still a placeholder inbox (see `QUALITY_CHECKLIST.md`); nothing else here matters if replies bounce
+- [ ] Collect and add real testimonials/reviews to the Press section once there are a few gigs to draw from — none exist yet, not inventing any (same rule as the bio copy)
+- [ ] Add a private-events pricing/package blurb near Booking (e.g. private party starting rate) — the site currently gives zero pricing signal, which specifically blocks the $2000-private-party goal since those clients want cost clarity before they'll reach out
+- [ ] Photo gallery (tracked above under Content) also doubles as a private-party trust signal once real photos exist
+
 ## Build
 
 - [x] ~~Shows section crashing on a bad GigSync date~~ — the gigsync-integration session logged a gig with an unparseable source date ("32-September,2026"); GigSync stores that as `date: ""` rather than guessing, and `Shows.astro` fed that straight into `Intl.DateTimeFormat`, which throws on an invalid date and took down the entire homepage build. Fixed by filtering out gigs with an empty/unparseable date in `shows.ts` before they reach `Shows.astro` (logs a warning naming the venue so it's not silently dropped) — same "one bad record can't break the build" resilience already used for a full fetch failure, just scoped to a single bad item. The Reginalds gig itself still needs a real date from Doug before it'll show up.
